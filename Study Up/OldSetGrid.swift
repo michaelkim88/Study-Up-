@@ -165,8 +165,6 @@ struct StudyModeView: View {
     private func handleIncorrectCard() {
         guard currentCardIndex < flashcardSet.flashcards.count - 1 else { return }
         withAnimation {
-            // Move the current card to the end of the deck
-            let currentCard = flashcardSet.flashcards[currentCardIndex]
             // Note: In a real implementation, we'd want to modify the actual flashcards array
             currentCardIndex += 1
             isShowingAnswer = false
