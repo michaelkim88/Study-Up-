@@ -174,6 +174,189 @@ struct StudyModeView: View {
     }
 }
 
+// Card View Component
+struct FlashcardView: View {
+    let card: Flashcard
+    let index: Int
+    let isFlipped: Bool
+    let onTap: () -> Void
+    let onLongPress: () -> Void
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            Text(isFlipped ? "Answer" : "Question")
+                .font(.title3)
+                .fontWeight(.semibold)
+                .foregroundColor(.blue)
+            
+            ZStack {
+                // Question side
+                Text(card.question)
+                    .font(.title2)
+                    .multilineTextAlignment(.center)
+                    .frame(width: 300, height: 200)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 30)
+                    .background(Color(.systemBackground))
+                    .cornerRadius(15)
+                    .shadow(radius: 5)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 15)
+                            .stroke(Color.blue, lineWidth: 2)
+                    )
+                    .opacity(isFlipped ? 0 : 1)
+                    .rotation3DEffect(
+                        .degrees(isFlipped ? 180 : 0),
+                        axis: (x: 0, y: 1, z: 0)
+                    )
+                
+                // Answer side
+                Text(card.answer)
+                    .font(.title2)
+                    .multilineTextAlignment(.center)
+                    .frame(width: 300, height: 200)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 30)
+                    .background(Color(.systemBackground))
+                    .cornerRadius(15)
+                    .shadow(radius: 5)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 15)
+                            .stroke(Color.green, lineWidth: 2)
+                    )
+                    .opacity(isFlipped ? 1 : 0)
+                    .rotation3DEffect(
+                        .degrees(isFlipped ? 0 : -180),
+                        axis: (x: 0, y: 1, z: 0)
+                    )
+            }
+            .onTapGesture(perform: onTap)
+            .onLongPressGesture(perform: onLongPress)
+        }
+    }
+}
+
+
+// Navigation Buttons Component
+struct NavigationButtonsView: View {
+    let flashcardSet: FlashcardSet
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            NavigationLink(destination: Text("Edit Mode - Coming Soon")) {
+                HStack {
+                    Image(systemName: "pencil")
+                        .font(.title2)
+                    Text("Edit Flashcards")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+            }
+            
+            NavigationLink(destination: StudyModeView(flashcardSet: flashcardSet)) {
+                HStack {
+                    Image(systemName: "book.fill")
+                        .font(.title2)
+                    Text("Study Flashcards")
+                        .font(.title2)
+                        .fontWeight(.semibold)
+                }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.green)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+            }
+        }
+        .padding(.horizontal)
+    }
+}
+
+// Edit Sheet Component
+struct EditSheetView: View {
+    let isQuestion: Bool
+    @Binding var editText: String
+    let onCancel: () -> Void
+    let onSave: () -> Void
+    
+    var body: some View {
+        NavigationView {
+            VStack {
+                Text(isQuestion ? "Edit Question" : "Edit Answer")
+                    .font(.headline)
+                    .padding()
+                
+                TextEditor(text: $editText)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(8)
+                    .padding()
+                
+                Spacer()
+            }
+            .navigationBarItems(
+                leading: Button("Cancel", action: onCancel),
+                trailing: Button("Save", action: onSave)
+            )
+        }
+    }
+}
+
+// Carousel View Component
+struct CarouselView: View {
+    let geometry: GeometryProxy
+    let flashcardSet: FlashcardSet
+    @Binding var currentIndex: Int
+    @Binding var flippedCards: Set<Int>
+    @Binding var editingCard: (index: Int, isQuestion: Bool)?
+    @Binding var editText: String
+    
+    var body: some View {
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 0) {
+                    ForEach(Array(flashcardSet.flashcards.enumerated()), id: \.offset) { index, card in
+                        FlashcardView(
+                            card: card,
+                            index: index,
+                            isFlipped: flippedCards.contains(index),
+                            onTap: {
+                                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                                    if flippedCards.contains(index) {
+                                        flippedCards.remove(index)
+                                    } else {
+                                        flippedCards.insert(index)
+                                    }
+                                }
+                            },
+                            onLongPress: {
+                                editingCard = (index, !flippedCards.contains(index))
+                                editText = flippedCards.contains(index) ? card.answer : card.question
+                            }
+                        )
+                        .frame(width: geometry.size.width)
+                        .id(index)
+                        .onAppear {
+                            currentIndex = index
+                        }
+                    }
+                }
+            }
+            .scrollTargetBehavior(.paging)
+            .onChange(of: currentIndex) { oldValue, newValue in
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    proxy.scrollTo(newValue, anchor: .center)
+                }
+            }
+        }
+    }
+}
+
 struct FlashcardSetDetailView: View {
     let flashcardSet: FlashcardSet
     @State private var selectedMode: StudyMode?
@@ -181,12 +364,10 @@ struct FlashcardSetDetailView: View {
     @State private var editingCard: (index: Int, isQuestion: Bool)? = nil
     @State private var editText: String = ""
     @State private var currentIndex: Int = 0
-    @State private var scrollOffset: CGFloat = 0
     
     enum StudyMode: String, Identifiable {
         case edit = "Edit"
         case study = "Study"
-        
         var id: String { rawValue }
     }
     
@@ -196,182 +377,34 @@ struct FlashcardSetDetailView: View {
                 .font(.title)
                 .padding()
             
-            VStack(spacing: 20) {
-                NavigationLink(destination: Text("Edit Mode - Coming Soon")) {
-                    HStack {
-                        Image(systemName: "pencil")
-                            .font(.title2)
-                        Text("Edit Flashcards")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                }
-                
-                NavigationLink(destination: StudyModeView(flashcardSet: flashcardSet)) {
-                    HStack {
-                        Image(systemName: "book.fill")
-                            .font(.title2)
-                        Text("Study Flashcards")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.green)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                }
-            }
-            .padding(.horizontal)
+            NavigationButtonsView(flashcardSet: flashcardSet)
             
             Spacer()
             
             GeometryReader { geometry in
-                // Horizontal flashcard preview
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 0) {
-                        ForEach(Array(flashcardSet.flashcards.enumerated()), id: \.offset) { index, card in
-                            VStack(spacing: 12) {
-                                Text(flippedCards.contains(index) ? "Answer" : "Question")
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.blue)
-                                
-                                ZStack {
-                                    // Question side
-                                    Text(card.question)
-                                        .font(.title2)
-                                        .multilineTextAlignment(.center)
-                                        .frame(width: 300, height: 200)
-                                        .padding(.horizontal, 20)
-                                        .padding(.vertical, 30)
-                                        .background(Color(.systemBackground))
-                                        .cornerRadius(15)
-                                        .shadow(radius: 5)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 15)
-                                                .stroke(Color.blue, lineWidth: 2)
-                                        )
-                                        .opacity(flippedCards.contains(index) ? 0 : 1)
-                                        .rotation3DEffect(
-                                            .degrees(flippedCards.contains(index) ? 180 : 0),
-                                            axis: (x: 0, y: 1, z: 0)
-                                        )
-                                    
-                                    // Answer side
-                                    Text(card.answer)
-                                        .font(.title2)
-                                        .multilineTextAlignment(.center)
-                                        .frame(width: 300, height: 200)
-                                        .padding(.horizontal, 20)
-                                        .padding(.vertical, 30)
-                                        .background(Color(.systemBackground))
-                                        .cornerRadius(15)
-                                        .shadow(radius: 5)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 15)
-                                                .stroke(Color.green, lineWidth: 2)
-                                        )
-                                        .opacity(flippedCards.contains(index) ? 1 : 0)
-                                        .rotation3DEffect(
-                                            .degrees(flippedCards.contains(index) ? 0 : -180),
-                                            axis: (x: 0, y: 1, z: 0)
-                                        )
-                                }
-                                .onTapGesture {
-                                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                                        if flippedCards.contains(index) {
-                                            flippedCards.remove(index)
-                                        } else {
-                                            flippedCards.insert(index)
-                                        }
-                                    }
-                                }
-                                .onLongPressGesture {
-                                    editingCard = (index, !flippedCards.contains(index))
-                                    editText = flippedCards.contains(index) ? card.answer : card.question
-                                }
-                            }
-                            .frame(width: geometry.size.width)
-                        }
-                    }
-                }
-                .scrollTargetBehavior(.paging)
+                CarouselView(
+                    geometry: geometry,
+                    flashcardSet: flashcardSet,
+                    currentIndex: $currentIndex,
+                    flippedCards: $flippedCards,
+                    editingCard: $editingCard,
+                    editText: $editText
+                )
             }
             .frame(height: 350)
             
-            // Scrubbing bar
-            VStack(spacing: 8) {
-                // Card number indicator
-                Text("\(currentIndex + 1) / \(flashcardSet.flashcards.count)")
-                    .font(.headline)
-                    .foregroundColor(.blue)
-                
-                // Numbered scrubbing bar
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 30) {
-                        ForEach(0..<flashcardSet.flashcards.count, id: \.self) { index in
-                            Button(action: {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                    currentIndex = index
-                                    scrollOffset = -CGFloat(index) * UIScreen.main.bounds.width
-                                }
-                            }) {
-                                Text("\(index + 1)")
-                                    .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(currentIndex == index ? .white : .blue)
-                                    .frame(width: 30, height: 30)
-                                    .background(currentIndex == index ? Color.blue : Color.clear)
-                                    .cornerRadius(15)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(Color.blue, lineWidth: 1)
-                                    )
-                            }
-                        }
-                    }
-                    .padding(.horizontal)
-                    .scrollTargetLayout()
-                }
-                .frame(height: 40)
-                .scrollTargetBehavior(.viewAligned)
-            }
-            .padding(.bottom, 20)
         }
         .navigationTitle(flashcardSet.title)
         .sheet(item: Binding(
             get: { editingCard.map { EditingCard(index: $0.index, isQuestion: $0.isQuestion) } },
             set: { editingCard = $0.map { ($0.index, $0.isQuestion) } }
         )) { editing in
-            NavigationView {
-                VStack {
-                    Text(editing.isQuestion ? "Edit Question" : "Edit Answer")
-                        .font(.headline)
-                        .padding()
-                    
-                    TextEditor(text: $editText)
-                        .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(8)
-                        .padding()
-                    
-                    Spacer()
-                }
-                .navigationBarItems(
-                    leading: Button("Cancel") {
-                        editingCard = nil
-                    },
-                    trailing: Button("Save") {
-                        // Here you would update the actual flashcard
-                        editingCard = nil
-                    }
-                )
-            }
+            EditSheetView(
+                isQuestion: editing.isQuestion,
+                editText: $editText,
+                onCancel: { editingCard = nil },
+                onSave: { editingCard = nil }
+            )
         }
     }
 }
