@@ -74,7 +74,6 @@ struct FlashcardSetGridView: View {
                 }
                 .padding(.all)
             }
-            .navigationTitle("Study Sets")
         }
     }
 }

@@ -18,6 +18,7 @@ struct ExpandableTextBox: View {
                 .fontWeight(.heavy)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: .infinity, alignment: .center)
+            Spacer()
             
             if isExpanded {
                 VStack {
@@ -47,6 +48,7 @@ struct ExpandableTextBox: View {
                     }
                     .transition(.opacity)
             }
+            Spacer()
         }
         .padding()
     }
