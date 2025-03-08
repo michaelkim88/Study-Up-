@@ -107,12 +107,18 @@ struct SetView: View {
                         .overlay {
                             VStack(spacing: 8) {
                                 ForEach(0..<flashcardSet.flashcards.count, id: \.self) { index in
-                                    Text("\(index + 1)")
-                                        .font(.caption)
-                                        .foregroundColor(currentIndex == index ? .white : .gray)
-                                        .frame(width: 30, height: 30)
-                                        .background(currentIndex == index ? Color.blue : Color.clear)
-                                        .clipShape(Circle())
+                                    Button(action: {
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                            currentIndex = index
+                                        }
+                                    }) {
+                                        Text("\(index + 1)")
+                                            .font(.caption)
+                                            .foregroundColor(currentIndex == index ? .white : .gray)
+                                            .frame(width: 30, height: 30)
+                                            .background(currentIndex == index ? Color.blue : Color.clear)
+                                            .clipShape(Circle())
+                                    }
                                 }
                             }
                             .padding(.vertical)
@@ -123,7 +129,9 @@ struct SetView: View {
                                     let cardHeight = (geometry.size.height - 40) / CGFloat(flashcardSet.flashcards.count)
                                     let newIndex = Int((value.location.y - 20) / cardHeight)
                                     if newIndex >= 0 && newIndex < flashcardSet.flashcards.count {
-                                        currentIndex = newIndex
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                            currentIndex = newIndex
+                                        }
                                     }
                                 }
                         )
