@@ -11,16 +11,36 @@ import CoreMotion
 struct FlashcardSetGridView: View {
     let flashcardSets: [FlashcardSet] = [
         FlashcardSet(title: "Math Basics", flashcards: [
-            Flashcard(question: "What is 2+2?", answer: "4")
+            Flashcard(question: "What is 2+2?", answer: "4"),
+            Flashcard(question: "What is 7 x 8?", answer: "56"),
+            Flashcard(question: "What is the square root of 16?", answer: "4"),
+            Flashcard(question: "What is π (pi) rounded to 2 decimal places?", answer: "3.14"),
+            Flashcard(question: "What is 15% of 200?", answer: "30"),
+            Flashcard(question: "What is the formula for the area of a circle?", answer: "πr²")
         ]),
         FlashcardSet(title: "History", flashcards: [
-            Flashcard(question: "Who discovered America?", answer: "Columbus")
+            Flashcard(question: "Who discovered America?", answer: "Columbus"),
+            Flashcard(question: "In what year did World War II end?", answer: "1945"),
+            Flashcard(question: "Who was the first President of the United States?", answer: "George Washington"),
+            Flashcard(question: "What ancient wonder was located in Alexandria?", answer: "The Great Lighthouse"),
+            Flashcard(question: "Which empire built the Pyramids?", answer: "Ancient Egyptian Empire"),
+            Flashcard(question: "When did the Berlin Wall fall?", answer: "1989")
         ]),
         FlashcardSet(title: "Science", flashcards: [
-            Flashcard(question: "What is H2O?", answer: "Water")
+            Flashcard(question: "What is H2O?", answer: "Water"),
+            Flashcard(question: "What is the closest planet to the Sun?", answer: "Mercury"),
+            Flashcard(question: "What is the hardest natural substance?", answer: "Diamond"),
+            Flashcard(question: "What is the speed of light?", answer: "299,792,458 meters per second"),
+            Flashcard(question: "What is the largest organ in the human body?", answer: "Skin"),
+            Flashcard(question: "What is the process of plants making food called?", answer: "Photosynthesis")
         ]),
         FlashcardSet(title: "Languages", flashcards: [
-            Flashcard(question: "Hola means?", answer: "Hello")
+            Flashcard(question: "Hola means?", answer: "Hello"),
+            Flashcard(question: "Bonjour means?", answer: "Good day/Hello"),
+            Flashcard(question: "Gracias means?", answer: "Thank you"),
+            Flashcard(question: "Comment allez-vous means?", answer: "How are you?"),
+            Flashcard(question: "Guten Tag means?", answer: "Good day"),
+            Flashcard(question: "Ciao means?", answer: "Hello/Goodbye")
         ])
     ]
         
@@ -160,6 +180,8 @@ struct FlashcardSetDetailView: View {
     @State private var flippedCards: Set<Int> = []
     @State private var editingCard: (index: Int, isQuestion: Bool)? = nil
     @State private var editText: String = ""
+    @State private var currentIndex: Int = 0
+    @State private var scrollOffset: CGFloat = 0
     
     enum StudyMode: String, Identifiable {
         case edit = "Edit"
@@ -209,29 +231,60 @@ struct FlashcardSetDetailView: View {
             
             Spacer()
             
-            // Horizontal flashcard preview
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 15) {
-                    ForEach(Array(flashcardSet.flashcards.enumerated()), id: \.offset) { index, card in
-                        VStack {
-                            Text(flippedCards.contains(index) ? "Answer" : "Question")
-                                .font(.caption)
-                                .foregroundColor(.blue)
-                            
-                            Text(flippedCards.contains(index) ? card.answer : card.question)
-                                .font(.system(size: 14))
-                                .multilineTextAlignment(.center)
-                                .frame(width: 120, height: 80)
-                                .padding(8)
-                                .background(Color(.systemBackground))
-                                .cornerRadius(8)
-                                .shadow(radius: 2)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 8)
-                                        .stroke(Color.blue, lineWidth: 1)
-                                )
+            GeometryReader { geometry in
+                // Horizontal flashcard preview
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 0) {
+                        ForEach(Array(flashcardSet.flashcards.enumerated()), id: \.offset) { index, card in
+                            VStack(spacing: 12) {
+                                Text(flippedCards.contains(index) ? "Answer" : "Question")
+                                    .font(.title3)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.blue)
+                                
+                                ZStack {
+                                    // Question side
+                                    Text(card.question)
+                                        .font(.title2)
+                                        .multilineTextAlignment(.center)
+                                        .frame(width: 300, height: 200)
+                                        .padding(.horizontal, 20)
+                                        .padding(.vertical, 30)
+                                        .background(Color(.systemBackground))
+                                        .cornerRadius(15)
+                                        .shadow(radius: 5)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 15)
+                                                .stroke(Color.blue, lineWidth: 2)
+                                        )
+                                        .opacity(flippedCards.contains(index) ? 0 : 1)
+                                        .rotation3DEffect(
+                                            .degrees(flippedCards.contains(index) ? 180 : 0),
+                                            axis: (x: 0, y: 1, z: 0)
+                                        )
+                                    
+                                    // Answer side
+                                    Text(card.answer)
+                                        .font(.title2)
+                                        .multilineTextAlignment(.center)
+                                        .frame(width: 300, height: 200)
+                                        .padding(.horizontal, 20)
+                                        .padding(.vertical, 30)
+                                        .background(Color(.systemBackground))
+                                        .cornerRadius(15)
+                                        .shadow(radius: 5)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 15)
+                                                .stroke(Color.green, lineWidth: 2)
+                                        )
+                                        .opacity(flippedCards.contains(index) ? 1 : 0)
+                                        .rotation3DEffect(
+                                            .degrees(flippedCards.contains(index) ? 0 : -180),
+                                            axis: (x: 0, y: 1, z: 0)
+                                        )
+                                }
                                 .onTapGesture {
-                                    withAnimation(.spring()) {
+                                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                                         if flippedCards.contains(index) {
                                             flippedCards.remove(index)
                                         } else {
@@ -243,12 +296,52 @@ struct FlashcardSetDetailView: View {
                                     editingCard = (index, !flippedCards.contains(index))
                                     editText = flippedCards.contains(index) ? card.answer : card.question
                                 }
+                            }
+                            .frame(width: geometry.size.width)
                         }
                     }
                 }
-                .padding(.horizontal)
+                .scrollTargetBehavior(.paging)
             }
-            .frame(height: 150)
+            .frame(height: 350)
+            
+            // Scrubbing bar
+            VStack(spacing: 8) {
+                // Card number indicator
+                Text("\(currentIndex + 1) / \(flashcardSet.flashcards.count)")
+                    .font(.headline)
+                    .foregroundColor(.blue)
+                
+                // Numbered scrubbing bar
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: 30) {
+                        ForEach(0..<flashcardSet.flashcards.count, id: \.self) { index in
+                            Button(action: {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                    currentIndex = index
+                                    scrollOffset = -CGFloat(index) * UIScreen.main.bounds.width
+                                }
+                            }) {
+                                Text("\(index + 1)")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(currentIndex == index ? .white : .blue)
+                                    .frame(width: 30, height: 30)
+                                    .background(currentIndex == index ? Color.blue : Color.clear)
+                                    .cornerRadius(15)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.blue, lineWidth: 1)
+                                    )
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
+                    .scrollTargetLayout()
+                }
+                .frame(height: 40)
+                .scrollTargetBehavior(.viewAligned)
+            }
+            .padding(.bottom, 20)
         }
         .navigationTitle(flashcardSet.title)
         .sheet(item: Binding(
