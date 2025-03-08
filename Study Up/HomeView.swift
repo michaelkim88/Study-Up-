@@ -36,7 +36,7 @@ struct HomeView: View {
                     ScrollView {
                         LazyVGrid(columns: columns, spacing: 20) {
                             ForEach(flashcardSets) { set in
-                                NavigationLink(destination: FlashcardSetDetailView(flashcardSet: set)) {
+                                NavigationLink(destination: SetView(flashcardSet: set)) {
                                     VStack {
                                         Text(set.title)
                                             .font(.title2)
