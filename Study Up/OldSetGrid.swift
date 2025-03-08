@@ -64,9 +64,9 @@ struct FlashcardSetGridView: View {
                                 .cornerRadius(10)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 10)
-                                            .stroke(Color.blue, lineWidth: 6)
+                                            .stroke(Color.blue, lineWidth: 10)
                                     )
-                                .padding(.vertical, -4.0)
+                                .padding(.vertical, 3)
                                 .padding(.horizontal, 2.0)
                         }
                         .foregroundColor(.black)
