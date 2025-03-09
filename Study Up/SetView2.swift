@@ -15,7 +15,7 @@ struct SetView2: View {
     @State private var currentIndex: Int = 0
 
     private func getVisibleRange(total: Int, current: Int) -> [Int] {
-        let windowSize = 10
+        let windowSize = 3
         let halfWindow = windowSize / 2
         
         var start = current - halfWindow
@@ -44,7 +44,8 @@ struct SetView2: View {
                 .fontWeight(.regular)
                 .foregroundColor(Color.black)
             
-            HStack (spacing: 5){
+            HStack (spacing: 5) {
+                
                 GeometryReader { geometry in
                     ScrollView(.vertical, showsIndicators: false) {
                         ScrollViewReader { proxy in
@@ -111,16 +112,13 @@ struct SetView2: View {
                                 }
                             }
                             .onChange(of: currentIndex) { oldValue, newValue in
-                                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                     proxy.scrollTo(newValue, anchor: .center)
                                 }
-                                
-                                // Make sure all the cards are flipped question first
-                                flippedCards.removeAll()
-                                
                             }
                         }
                     }
+                    .scrollTargetBehavior(.paging)
                     .scrollDisabled(false)
                     .simultaneousGesture(
                         DragGesture()
@@ -136,46 +134,71 @@ struct SetView2: View {
                 }
                 .padding(.leading)
                 
-                // Scrubbing bar
-                GeometryReader { geometry in
-                    VStack {
-                        Spacer()
-                        Rectangle()
-                            .fill(Color.gray.opacity(0.00001))
-                            .frame(width: 30, height: 400)
-                            .overlay {
-                                VStack(spacing: 8) {
-                                    let visibleRange = getVisibleRange(total: flashcardSet.flashcards.count, current: currentIndex)
-                                    ForEach(visibleRange, id: \.self) { index in
-                                        Text("\(index + 1)")
-                                            .font(.caption)
-                                            .foregroundColor(currentIndex == index ? .white : .gray)
-                                            .frame(width: 20, height: 30)
-                                            .background(currentIndex == index ? Color.blue : Color.clear)
-                                            .clipShape(Circle())
-                                            .onTapGesture {
-                                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                                    currentIndex = index
-                                                }
+                
+                
+                GeometryReader { geo in
+                    // Constants for indicator size and spacing
+                    let indicatorDiameter: CGFloat = 12
+                    let spacing: CGFloat = 10
+                    let totalHeight = geo.size.height
+                    let windowSize = 5
+                    let halfWindow = windowSize / 2
+                    
+                    // Calculate visible range
+                    var start = currentIndex - halfWindow
+                    var end = currentIndex + halfWindow
+                    
+                    // Adjust if we're near the start
+                    if start < 0 {
+                        start = 0
+                        end = min(windowSize - 1, flashcardSet.flashcards.count - 1)
+                    }
+                    
+                    // Adjust if we're near the end
+                    if end >= flashcardSet.flashcards.count {
+                        end = flashcardSet.flashcards.count - 1
+                        start = max(0, flashcardSet.flashcards.count - windowSize)
+                    }
+                    
+                    let visibleRange = Array(start...end)
+                    
+                    return Rectangle()
+                        .fill(Color.clear)
+                        .frame(width: geo.size.width, height: totalHeight)
+                        .overlay {
+                            VStack(spacing: spacing) {
+                                ForEach(visibleRange, id: \.self) { index in
+                                    Circle()
+                                        .fill(index == currentIndex ? Color.blue : Color.gray.opacity(0.5))
+                                        .frame(width: indicatorDiameter, height: indicatorDiameter)
+                                        .onTapGesture {
+                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                                currentIndex = index
                                             }
-                                    }
+                                        }
                                 }
-                                .padding(.vertical)
                             }
-                            .gesture(
-                                DragGesture(minimumDistance: 0)
-                                    .onChanged { value in
-                                        let cardHeight = (geometry.size.height - 40) / CGFloat(flashcardSet.flashcards.count)
-                                        let newIndex = Int((value.location.y - 20) / cardHeight)
-                                        if newIndex >= 0 && newIndex < flashcardSet.flashcards.count {
+                            .frame(width: geo.size.width, height: totalHeight, alignment: .center)
+                        }
+                        .gesture(
+                            DragGesture()
+                                .onChanged { value in
+                                    // Map the drag's y-location to an image index
+                                    let y = value.location.y
+                                    // Determine the proportion of the gesture along the vertical space
+                                    let proportion = y / totalHeight
+                                    // Calculate new index based on the number of images
+                                    let newIndex = min(max(Int(round(proportion * CGFloat(flashcardSet.flashcards.count - 1))), 0), flashcardSet.flashcards.count - 1)
+                                    if newIndex != currentIndex {
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                             currentIndex = newIndex
                                         }
                                     }
-                            )
-                        Spacer()
-                    }
+                                }
+                        )
                 }
-                .frame(width: 30)
+                .frame(width: 40, height: 400)
+                .padding(.leading, 8)
             }
             
             
