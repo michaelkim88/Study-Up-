@@ -8,9 +8,37 @@
 import SwiftUI
 
 struct HomeView: View {
+    @Environment(\.colorScheme) var colorScheme
+    @State private var isExpanded = false
+    
+    // Computed colors that adapt to color scheme
+    var backgroundColor: Color {
+        colorScheme == .dark ? Color(red: 0.02, green: 0.02, blue: 0.15) : Color(red: 0.95, green: 0.95, blue: 1.0)
+    }
+    
+    var boxColor: Color {
+        colorScheme == .dark ? Color(red: 0.25, green: 0.25, blue: 0.3) : Color(red: 0.9, green: 0.9, blue: 0.95)
+    }
+    
+    var boxBorderColor: Color {
+        colorScheme == .dark ? Color(red: 0.3, green: 0.3, blue: 0.35) : Color(red: 0.8, green: 0.8, blue: 0.85)
+    }
+    
+    var textColor: Color {
+        colorScheme == .dark ? .white : Color(red: 0.1, green: 0.1, blue: 0.2)
+    }
+    
+    var cutoffColor: Color {
+        colorScheme == .dark ? Color(red: 0.05, green: 0.05, blue: 0.2) : Color(red: 0.93, green: 0.93, blue: 0.98)
+    }
+    
+    var buttonTextColor: Color {
+        colorScheme == .dark ? Color(red: 0.05, green: 0.05, blue: 0.2) : .white
+    }
+    
     // Make flashcardSets mutable with @State
     @State private var flashcardSets: [FlashcardSet] = [
-        FlashcardSet(title: "Math Basics", flashcards: [
+        FlashcardSet(title: "Math Basics to Study for the Exam Hello Hello", flashcards: [
             Flashcard(question: "What is 2+2?", answer: "4"),
             Flashcard(question: "What is 7 x 8?", answer: "56")
         ]),
@@ -22,7 +50,7 @@ struct HomeView: View {
             Flashcard(question: "What is H2O?", answer: "Water"),
             Flashcard(question: "What is the closest planet to the Sun?", answer: "Mercury")
         ]),
-        FlashcardSet(title: "Placeholder Test", flashcards: [
+        FlashcardSet(title: "The War of the Regulation and Insurrection in South Carolina", flashcards: [
             
             Flashcard(question: "What is H2O?", answer: "Water"),
             Flashcard(question: "What is the closest planet to the Sun?", answer: "Mercury"),
@@ -69,15 +97,19 @@ struct HomeView: View {
                                             .font(.title2)
                                             .fontWeight(.bold)
                                             .multilineTextAlignment(.center)
-                                            .foregroundColor(.white)
+                                            .foregroundColor(textColor)
+                                            .lineLimit(3)
+                                            .minimumScaleFactor(0.5)
+                                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                            .padding(.horizontal, 8)
                                     }
                                     .frame(maxWidth: .infinity, minHeight: 120)
-                                    .background(Color(red: 0.25, green: 0.25, blue: 0.3))
+                                    .background(boxColor)
                                     .cornerRadius(12)
                                     .shadow(radius: 3)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 12)
-                                            .stroke(Color(red: 0.3, green: 0.3, blue: 0.35), lineWidth: 1)
+                                            .stroke(boxBorderColor, lineWidth: 1)
                                     )
                                     .padding(.horizontal, 4)
                                 }
@@ -85,13 +117,14 @@ struct HomeView: View {
                         }
                         .padding()
                         .padding(.bottom, geometry.safeAreaInsets.bottom + 150)
+                        .frame(width: geometry.size.width)
                     }
                 }
                 
                 // Top cutoff overlay
                 VStack {
                     Rectangle()
-                        .fill(.black)
+                        .fill(backgroundColor)
                         .frame(height: 60)
                     Spacer()
                 }
@@ -102,41 +135,28 @@ struct HomeView: View {
                 VStack(spacing: 0) {
                     Spacer()
                     Rectangle()
-                        .fill(Color(red: 0.05, green: 0.05, blue: 0.2))
+                        .fill(cutoffColor)
                         .frame(height: 120)
                 }
                 .frame(maxWidth: .infinity)
                 .ignoresSafeArea(.all, edges: .bottom)
                 
                 // Button Row
-                HStack(spacing: 20) {
+                ZStack {
                     // Search Button
                     Button(action: {
                         // Search functionality will go here
                     }) {
                         Image(systemName: "magnifyingglass")
                             .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(textColor)
                             .frame(width: 50, height: 50)
-                            .background(Color(red: 0.25, green: 0.25, blue: 0.3))
+                            .background(boxColor)
                             .clipShape(Circle())
                             .shadow(radius: 5)
                     }
-                    
-                    // Add Button
-                    Button(action: {
-                        // Add new untitled flashcard set
-                        let newSet = FlashcardSet(title: "Untitled Set", flashcards: [])
-                        flashcardSets.append(newSet)
-                    }) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundColor(Color(red: 0.05, green: 0.05, blue: 0.2))
-                            .frame(width: UIScreen.main.bounds.width * 0.6, height: 50)
-                            .background(Color(red: 0.2, green: 0.8, blue: 0.4))
-                            .cornerRadius(8)
-                            .shadow(radius: 5)
-                    }
+                    .offset(x: isExpanded ? -200 : -((UIScreen.main.bounds.width * 0.6) / 2 + 35))
+                    .opacity(isExpanded ? 0 : 1)
                     
                     // Profile Button
                     Button(action: {
@@ -144,17 +164,76 @@ struct HomeView: View {
                     }) {
                         Image(systemName: "person.fill")
                             .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(textColor)
                             .frame(width: 50, height: 50)
-                            .background(Color(red: 0.25, green: 0.25, blue: 0.3))
+                            .background(boxColor)
                             .clipShape(Circle())
                             .shadow(radius: 5)
                     }
+                    .offset(x: isExpanded ? 200 : ((UIScreen.main.bounds.width * 0.6) / 2 + 35))
+                    .opacity(isExpanded ? 0 : 1)
+                    
+                    // Center Button Container
+                    Group {
+                        if isExpanded {
+                            // Expanded buttons
+                            HStack(spacing: 0) {
+                                Button(action: {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                        isExpanded = false
+                                    }
+                                }) {
+                                    Text("Import")
+                                        .font(.headline)
+                                        .foregroundColor(buttonTextColor)
+                                        .frame(maxWidth: .infinity)
+                                }
+                                
+                                Rectangle()
+                                    .fill(buttonTextColor)
+                                    .frame(width: 3, height: 30)
+                                
+                                Button(action: {
+                                    let newSet = FlashcardSet(title: "Untitled Set", flashcards: [])
+                                    flashcardSets.append(newSet)
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                        isExpanded = false
+                                    }
+                                }) {
+                                    Text("New Set")
+                                        .font(.headline)
+                                        .foregroundColor(buttonTextColor)
+                                        .frame(maxWidth: .infinity)
+                                }
+                            }
+                            .frame(height: 50)
+                            .background(Color(red: 0.2, green: 0.8, blue: 0.4))
+                            .cornerRadius(8)
+                            .shadow(radius: 5)
+                        } else {
+                            // Add Button
+                            Button(action: {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                    isExpanded = true
+                                }
+                            }) {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 24, weight: .bold))
+                                    .foregroundColor(buttonTextColor)
+                                    .frame(height: 50)
+                                    .frame(maxWidth: .infinity)
+                                    .background(Color(red: 0.2, green: 0.8, blue: 0.4))
+                                    .cornerRadius(8)
+                                    .shadow(radius: 5)
+                            }
+                        }
+                    }
+                    .frame(width: isExpanded ? UIScreen.main.bounds.width - 40 : UIScreen.main.bounds.width * 0.6)
                 }
                 .padding(.bottom, 10)
+                .padding(.horizontal, 20)
             }
-            .preferredColorScheme(.dark)
-            .background(Color(red: 0.02, green: 0.02, blue: 0.15))
+            .background(backgroundColor)
         }
     }
 }
