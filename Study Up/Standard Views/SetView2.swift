@@ -115,10 +115,10 @@ struct SetView2: View {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                     proxy.scrollTo(newValue, anchor: .center)
                                 }
+                                flippedCards.removeAll()
                             }
                         }
                     }
-                    .scrollTargetBehavior(.paging)
                     .scrollDisabled(false)
                     .simultaneousGesture(
                         DragGesture()
@@ -132,7 +132,7 @@ struct SetView2: View {
                             }
                     )
                 }
-                .padding(.leading, 40)
+                .padding()
                 
                 
                 
@@ -219,15 +219,15 @@ struct SetView2: View {
                 }
                 
                 // Study Options button
-//                NavigationLink(destination: FlashcardView(flashcardSet: flashcardSet)) {
-//                    Label("Study", systemImage: "book.fill")
-//                        .font(.system(size: 24, weight: .bold))
-//                        .foregroundColor(Color(red: 0.05, green: 0.05, blue: 0.2))
-//                        .frame(width: UIScreen.main.bounds.width * 0.6, height: 50)
-//                        .background(Color(red: 0.2, green: 0.8, blue: 0.4))
-//                        .cornerRadius(8)
-//                        .shadow(radius: 5)
-//                }
+                NavigationLink(destination: FlashcardView(flashcardSet: flashcardSet)) {
+                    Label("Study", systemImage: "book.fill")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(Color(red: 0.05, green: 0.05, blue: 0.2))
+                        .frame(width: UIScreen.main.bounds.width * 0.6, height: 50)
+                        .background(Color(red: 0.2, green: 0.8, blue: 0.4))
+                        .cornerRadius(8)
+                        .shadow(radius: 5)
+                }
                 
                 // Profile Button
                 Button(action: {
@@ -244,6 +244,7 @@ struct SetView2: View {
             }
             .padding(.bottom, 10)
         }
+        .navigationBarBackButtonHidden(false)
     }
 }
 
