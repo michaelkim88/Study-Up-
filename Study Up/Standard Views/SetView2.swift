@@ -44,8 +44,8 @@ struct SetView2: View {
                 .fontWeight(.regular)
                 .foregroundColor(Color.black)
             
-            HStack (spacing: 5) {
-                
+            HStack (spacing: 0) {
+                Spacer()
                 GeometryReader { geometry in
                     ScrollView(.vertical, showsIndicators: false) {
                         ScrollViewReader { proxy in
@@ -132,73 +132,73 @@ struct SetView2: View {
                             }
                     )
                 }
-                .padding(.leading)
+                .padding(.leading, 40)
                 
                 
                 
-                GeometryReader { geo in
-                    // Constants for indicator size and spacing
-                    let indicatorDiameter: CGFloat = 12
-                    let spacing: CGFloat = 10
-                    let totalHeight = geo.size.height
-                    let windowSize = 5
-                    let halfWindow = windowSize / 2
-                    
-                    // Calculate visible range
-                    var start = currentIndex - halfWindow
-                    var end = currentIndex + halfWindow
-                    
-                    // Adjust if we're near the start
-                    if start < 0 {
-                        start = 0
-                        end = min(windowSize - 1, flashcardSet.flashcards.count - 1)
-                    }
-                    
-                    // Adjust if we're near the end
-                    if end >= flashcardSet.flashcards.count {
-                        end = flashcardSet.flashcards.count - 1
-                        start = max(0, flashcardSet.flashcards.count - windowSize)
-                    }
-                    
-                    let visibleRange = Array(start...end)
-                    
-                    return Rectangle()
-                        .fill(Color.clear)
-                        .frame(width: geo.size.width, height: totalHeight)
-                        .overlay {
-                            VStack(spacing: spacing) {
-                                ForEach(visibleRange, id: \.self) { index in
-                                    Circle()
-                                        .fill(index == currentIndex ? Color.blue : Color.gray.opacity(0.5))
-                                        .frame(width: indicatorDiameter, height: indicatorDiameter)
-                                        .onTapGesture {
-                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                                currentIndex = index
-                                            }
-                                        }
-                                }
-                            }
-                            .frame(width: geo.size.width, height: totalHeight, alignment: .center)
-                        }
-                        .gesture(
-                            DragGesture()
-                                .onChanged { value in
-                                    // Map the drag's y-location to an image index
-                                    let y = value.location.y
-                                    // Determine the proportion of the gesture along the vertical space
-                                    let proportion = y / totalHeight
-                                    // Calculate new index based on the number of images
-                                    let newIndex = min(max(Int(round(proportion * CGFloat(flashcardSet.flashcards.count - 1))), 0), flashcardSet.flashcards.count - 1)
-                                    if newIndex != currentIndex {
-                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                            currentIndex = newIndex
-                                        }
-                                    }
-                                }
-                        )
-                }
-                .frame(width: 40, height: 400)
-                .padding(.leading, 8)
+//                GeometryReader { geo in
+//                    // Constants for indicator size and spacing
+//                    let indicatorDiameter: CGFloat = 12
+//                    let spacing: CGFloat = 10
+//                    let totalHeight = geo.size.height
+//                    let windowSize = 5
+//                    let halfWindow = windowSize / 2
+//                    
+//                    // Calculate visible range
+//                    var start = currentIndex - halfWindow
+//                    var end = currentIndex + halfWindow
+//                    
+//                    // Adjust if we're near the start
+//                    if start < 0 {
+//                        start = 0
+//                        end = min(windowSize - 1, flashcardSet.flashcards.count - 1)
+//                    }
+//                    
+//                    // Adjust if we're near the end
+//                    if end >= flashcardSet.flashcards.count {
+//                        end = flashcardSet.flashcards.count - 1
+//                        start = max(0, flashcardSet.flashcards.count - windowSize)
+//                    }
+//                    
+//                    let visibleRange = Array(start...end)
+//                    
+//                    Rectangle()
+//                        .fill(Color.clear)
+//                        .frame(width: geo.size.width, height: totalHeight)
+//                        .overlay {
+//                            VStack(spacing: spacing) {
+//                                ForEach(visibleRange, id: \.self) { index in
+//                                    Circle()
+//                                        .fill(index == currentIndex ? Color.blue : Color.gray.opacity(0.5))
+//                                        .frame(width: indicatorDiameter, height: indicatorDiameter)
+//                                        .onTapGesture {
+//                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+//                                                currentIndex = index
+//                                            }
+//                                        }
+//                                }
+//                            }
+//                            .frame(width: geo.size.width, height: totalHeight, alignment: .center)
+//                        }
+//                        .gesture(
+//                            DragGesture()
+//                                .onChanged { value in
+//                                    // Map the drag's y-location to an image index
+//                                    let y = value.location.y
+//                                    // Determine the proportion of the gesture along the vertical space
+//                                    let proportion = y / totalHeight
+//                                    // Calculate new index based on the number of images
+//                                    let newIndex = min(max(Int(round(proportion * CGFloat(flashcardSet.flashcards.count - 1))), 0), flashcardSet.flashcards.count - 1)
+//                                    if newIndex != currentIndex {
+//                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+//                                            currentIndex = newIndex
+//                                        }
+//                                    }
+//                                }
+//                        )
+//                }
+//                .frame(width: 40, height: 400)
+//                .padding(.leading, 8)
             }
             
             
@@ -219,15 +219,15 @@ struct SetView2: View {
                 }
                 
                 // Study Options button
-                NavigationLink(destination: StudyModeView(flashcardSet: flashcardSet)) {
-                    Label("Study", systemImage: "book.fill")
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(Color(red: 0.05, green: 0.05, blue: 0.2))
-                        .frame(width: UIScreen.main.bounds.width * 0.6, height: 50)
-                        .background(Color(red: 0.2, green: 0.8, blue: 0.4))
-                        .cornerRadius(8)
-                        .shadow(radius: 5)
-                }
+//                NavigationLink(destination: FlashcardView(flashcardSet: flashcardSet)) {
+//                    Label("Study", systemImage: "book.fill")
+//                        .font(.system(size: 24, weight: .bold))
+//                        .foregroundColor(Color(red: 0.05, green: 0.05, blue: 0.2))
+//                        .frame(width: UIScreen.main.bounds.width * 0.6, height: 50)
+//                        .background(Color(red: 0.2, green: 0.8, blue: 0.4))
+//                        .cornerRadius(8)
+//                        .shadow(radius: 5)
+//                }
                 
                 // Profile Button
                 Button(action: {
