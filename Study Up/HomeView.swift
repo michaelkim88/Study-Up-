@@ -38,7 +38,7 @@ struct HomeView: View {
     
     // Make flashcardSets mutable with @State
     @State private var flashcardSets: [FlashcardSet] = [
-        FlashcardSet(title: "Math Basics to Study for the Exam Hello Hello", flashcards: [
+        FlashcardSet(title: "Math Basics", flashcards: [
             Flashcard(question: "What is 2+2?", answer: "4"),
             Flashcard(question: "What is 7 x 8?", answer: "56")
         ]),
@@ -99,8 +99,7 @@ struct HomeView: View {
                                             .multilineTextAlignment(.center)
                                             .foregroundColor(textColor)
                                             .lineLimit(3)
-                                            .minimumScaleFactor(0.5)
-                                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                            .minimumScaleFactor(0.8)
                                             .padding(.horizontal, 8)
                                     }
                                     .frame(maxWidth: .infinity, minHeight: 120)
@@ -124,7 +123,7 @@ struct HomeView: View {
                 // Top cutoff overlay
                 VStack {
                     Rectangle()
-                        .fill(cutoffColor)
+                        .fill(backgroundColor)
                         .frame(height: 60)
                     Spacer()
                 }
@@ -175,60 +174,69 @@ struct HomeView: View {
                     
                     // Center Button Container
                     Group {
-                        if isExpanded {
-                            // Expanded buttons
-                            HStack(spacing: 0) {
-                                Button(action: {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                        isExpanded = false
+                        ZStack {
+                            // Background
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill(Color(red: 0.2, green: 0.8, blue: 0.4))
+                                .shadow(radius: 5)
+                            
+                            if isExpanded {
+                                // Expanded buttons
+                                HStack(spacing: 0) {
+                                    Button(action: {
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                            isExpanded = false
+                                        }
+                                    }) {
+                                        Text("Import")
+                                            .font(.headline)
+                                            .foregroundColor(buttonTextColor)
+                                            .frame(maxWidth: .infinity)
                                     }
-                                }) {
-                                    Text("Import")
-                                        .font(.headline)
-                                        .foregroundColor(buttonTextColor)
-                                        .frame(maxWidth: .infinity)
+                                    
+                                    Rectangle()
+                                        .fill(buttonTextColor)
+                                        .frame(width: 3, height: 30)
+                                    
+                                    Button(action: {
+                                        let newSet = FlashcardSet(title: "Untitled Set", flashcards: [])
+                                        flashcardSets.append(newSet)
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                            isExpanded = false
+                                        }
+                                    }) {
+                                        Text("New Set")
+                                            .font(.headline)
+                                            .foregroundColor(buttonTextColor)
+                                            .frame(maxWidth: .infinity)
+                                    }
                                 }
-                                
+                                .opacity(isExpanded ? 1 : 0)
+                            }
+                            
+                            // Plus sign that transforms
+                            ZStack {
+                                // Horizontal line of plus
                                 Rectangle()
                                     .fill(buttonTextColor)
-                                    .frame(width: 3, height: 30)
+                                    .frame(width: 20, height: 3)
+                                    .scaleEffect(x: isExpanded ? 0 : 1, anchor: .center)
                                 
-                                Button(action: {
-                                    let newSet = FlashcardSet(title: "Untitled Set", flashcards: [])
-                                    flashcardSets.append(newSet)
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                        isExpanded = false
-                                    }
-                                }) {
-                                    Text("New Set")
-                                        .font(.headline)
-                                        .foregroundColor(buttonTextColor)
-                                        .frame(maxWidth: .infinity)
-                                }
+                                // Vertical line of plus
+                                Rectangle()
+                                    .fill(buttonTextColor)
+                                    .frame(width: 3, height: 20)
                             }
-                            .frame(height: 50)
-                            .background(Color(red: 0.2, green: 0.8, blue: 0.4))
-                            .cornerRadius(8)
-                            .shadow(radius: 5)
-                        } else {
-                            // Add Button
-                            Button(action: {
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                    isExpanded = true
-                                }
-                            }) {
-                                Image(systemName: "plus")
-                                    .font(.system(size: 24, weight: .bold))
-                                    .foregroundColor(buttonTextColor)
-                                    .frame(height: 50)
-                                    .frame(maxWidth: .infinity)
-                                    .background(Color(red: 0.2, green: 0.8, blue: 0.4))
-                                    .cornerRadius(8)
-                                    .shadow(radius: 5)
+                            .opacity(isExpanded ? 0 : 1)
+                        }
+                        .frame(height: 50)
+                        .frame(width: isExpanded ? UIScreen.main.bounds.width - 40 : UIScreen.main.bounds.width * 0.6)
+                        .onTapGesture {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                isExpanded.toggle()
                             }
                         }
                     }
-                    .frame(width: isExpanded ? UIScreen.main.bounds.width - 40 : UIScreen.main.bounds.width * 0.6)
                 }
                 .padding(.bottom, 10)
                 .padding(.horizontal, 20)
