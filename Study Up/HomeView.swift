@@ -123,7 +123,7 @@ struct HomeView: View {
                 // Top cutoff overlay
                 VStack {
                     Rectangle()
-                        .fill(backgroundColor)
+                        .fill(cutoffColor)
                         .frame(height: 60)
                     Spacer()
                 }
