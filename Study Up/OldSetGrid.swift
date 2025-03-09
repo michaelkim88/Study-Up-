@@ -406,11 +406,6 @@ struct FlashcardSetDetailView: View {
     }
 }
 
-struct EditingCard: Identifiable {
-    let index: Int
-    let isQuestion: Bool
-    var id: Int { index }
-}
 
 #Preview {
     FlashcardSetGridView()
