@@ -11,6 +11,7 @@ struct SetView2: View {
     let flashcardSet: FlashcardSet
     @State private var editingCard: (index: Int, isQuestion: Bool)? = nil
     @State private var editText: String = ""
+    @State private var isMenuExpanded = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) var colorScheme
     
@@ -120,57 +121,110 @@ struct SetView2: View {
                 .frame(maxWidth: .infinity)
                 .ignoresSafeArea(.all, edges: .bottom)
                 
-                // Button Row
-                ZStack(alignment: .center) {
-                    // Search Button
-                    Button(action: {
-                        // Search functionality will go here
-                    }) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(colors.textColor)
-                            .frame(width: 50, height: 50)
-                            .background(colors.boxColor)
-                            .clipShape(Circle())
-                            .shadow(radius: 5)
-                    }
-                    .offset(x: -((UIScreen.main.bounds.width * 0.6) / 2 + 35))
-                    
-                    // Study Button (matching AddButton style)
-                    NavigationLink(destination: FlashcardView(flashcardSet: flashcardSet)) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(Color(red: 0.2, green: 0.8, blue: 0.4))
-                                .shadow(radius: 5)
-                            
-                            Label("Study", systemImage: "book.fill")
-                                .font(.title)
-                                .foregroundColor(colors.buttonTextColor)
+                VStack(spacing: 0) {
+                    // Menu Options
+                    if isMenuExpanded {
+                        VStack(spacing: 10) {
+                            NavigationLink(destination: FlashcardView(flashcardSet: flashcardSet)) {
+                                MenuOptionButton(title: "Standard", icon: "rectangle.fill")
+                            }
+                            NavigationLink(destination: HorizontalFlashcardView(flashcardSet: flashcardSet)) {
+                                MenuOptionButton(title: "Motion", icon: "iphone.and.arrow.forward")
+                            }
+                            Button(action: {
+                                // Placeholder for future functionality
+                            }) {
+                                MenuOptionButton(title: "Coming Soon", icon: "clock.fill")
+                            }
                         }
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                        .padding(.bottom, 10)
                     }
-                    .frame(height: 50)
-                    .frame(width: UIScreen.main.bounds.width * 0.6)
                     
-                    // Profile Button
-                    Button(action: {
-                        // Profile functionality will go here
-                    }) {
-                        Image(systemName: "person.fill")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(colors.textColor)
-                            .frame(width: 50, height: 50)
-                            .background(colors.boxColor)
-                            .clipShape(Circle())
-                            .shadow(radius: 5)
+                    // Button Row
+                    ZStack(alignment: .center) {
+                        // Search Button
+                        Button(action: {
+                            // Search functionality will go here
+                        }) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(colors.textColor)
+                                .frame(width: 50, height: 50)
+                                .background(colors.boxColor)
+                                .clipShape(Circle())
+                                .shadow(radius: 5)
+                        }
+                        .offset(x: -((UIScreen.main.bounds.width * 0.6) / 2 + 35))
+                        
+                        // Main Study Button
+                        Button(action: {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                isMenuExpanded.toggle()
+                            }
+                        }) {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 8)
+                                    .fill(Color(red: 0.2, green: 0.8, blue: 0.4))
+                                    .shadow(radius: 5)
+                                
+                                Label("Study", systemImage: isMenuExpanded ? "xmark" : "book.fill")
+                                    .font(.title)
+                                    .foregroundColor(colors.buttonTextColor)
+                            }
+                        }
+                        .frame(height: 50)
+                        .frame(width: UIScreen.main.bounds.width * 0.6)
+                        
+                        // Profile Button
+                        Button(action: {
+                            // Profile functionality will go here
+                        }) {
+                            Image(systemName: "person.fill")
+                                .font(.system(size: 20, weight: .bold))
+                                .foregroundColor(colors.textColor)
+                                .frame(width: 50, height: 50)
+                                .background(colors.boxColor)
+                                .clipShape(Circle())
+                                .shadow(radius: 5)
+                        }
+                        .offset(x: ((UIScreen.main.bounds.width * 0.6) / 2 + 35))
                     }
-                    .offset(x: ((UIScreen.main.bounds.width * 0.6) / 2 + 35))
+                    .padding(.bottom, 10)
+                    .padding(.horizontal, 20)
                 }
-                .padding(.bottom, 10)
-                .padding(.horizontal, 20)
             }
             .background(colors.backgroundColor)
             .navigationBarBackButtonHidden(true)
         }
+    }
+}
+
+struct MenuOptionButton: View {
+    let title: String
+    let icon: String
+    @Environment(\.colorScheme) var colorScheme
+    
+    private var colors: AppColorScheme {
+        AppColorScheme(colorScheme: colorScheme)
+    }
+    
+    var body: some View {
+        HStack {
+            Image(systemName: icon)
+                .font(.system(size: 20))
+            Text(title)
+                .font(.headline)
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.system(size: 14, weight: .bold))
+        }
+        .foregroundColor(colors.textColor)
+        .padding()
+        .frame(width: UIScreen.main.bounds.width * 0.6)
+        .background(colors.boxColor)
+        .cornerRadius(8)
+        .shadow(radius: 3)
     }
 }
 
