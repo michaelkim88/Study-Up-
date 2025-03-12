@@ -18,6 +18,7 @@ struct FlashcardView: View {
     @State private var offset: CGSize = .zero
     @State private var rotation: Double = 0
     @State private var isPressed = false
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         
@@ -25,25 +26,33 @@ struct FlashcardView: View {
         GeometryReader { geometry in
             if currentIndex != flashcardSet.flashcards.count {
                 VStack {
-                    // Stats at the top
-                    HStack(spacing: 40) {
-                        VStack {
-                            Text("Unknown")
-                                .font(.headline)
-                            Text("\(unknownCount)")
-                                .font(.title)
-                                .foregroundColor(.red)
+                    // Back button and stats in the same HStack
+                    ZStack{
+                        // Stats centered
+                        HStack(spacing: 40) {
+                            VStack {
+                                Text("\(unknownCount)")
+                                    .font(.title)
+                                    .foregroundColor(.red)
+                            }
+                            
+                            VStack {
+                                Text("\(knownCount)")
+                                    .font(.title)
+                                    .foregroundColor(.green)
+                            }
                         }
-                        
-                        VStack {
-                            Text("Known")
-                                .font(.headline)
-                            Text("\(knownCount)")
-                                .font(.title)
-                                .foregroundColor(.green)
+                        HStack {
+                            Button(action: {
+                                dismiss() // Dismiss the current view
+                            }) {
+                                Image(systemName: "chevron.left")
+                                    .font(.title2)
+                                    .foregroundColor(.blue)
+                            }
+                            Spacer()
                         }
                     }
-                    .padding(.top)
                     
                     
                     let card = flashcardSet.flashcards[currentIndex]

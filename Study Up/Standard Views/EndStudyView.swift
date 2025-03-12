@@ -22,7 +22,6 @@ struct EndStudyView: View {
                         .font(.title2)
                         .foregroundColor(.blue)
                 }
-
                 Spacer()
             }
             
