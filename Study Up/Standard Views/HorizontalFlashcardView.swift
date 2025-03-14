@@ -18,6 +18,8 @@ struct HorizontalFlashcardView: View {
         GeometryReader { geometry in
             if !showEndStudy {
                 let card = flashcardSet.flashcards[currentIndex]
+                
+                // Don't use this gives index out of bounds error for now
                 ZStack {
                     // Question side
                     VStack {
@@ -196,8 +198,10 @@ struct HorizontalFlashcardView: View {
     }
     
     private func moveToNextCard() {
-        if currentIndex < flashcardSet.flashcards.count {
+        if currentIndex < flashcardSet.flashcards.count - 1 {
             currentIndex += 1
+        } else {
+            showEndStudy = true
         }
     }
 }
