@@ -54,7 +54,7 @@ struct SetView2: View {
                                     HStack(alignment: .top, spacing: 8) {
                                         Text("Q:")
                                             .font(.system(size: 18, weight: .medium))
-                                            .foregroundColor(colors.textColor)
+                                            .foregroundColor(colors.questionLabelColor)
                                         Text(card.question)
                                             .font(.system(size: 20))
                                             .foregroundColor(colors.textColor)
@@ -73,7 +73,7 @@ struct SetView2: View {
                                     HStack(alignment: .top, spacing: 8) {
                                         Text("A:")
                                             .font(.system(size: 18, weight: .medium))
-                                            .foregroundColor(colors.textColor)
+                                            .foregroundColor(colors.answerLabelColor)
                                         Text(card.answer)
                                             .font(.system(size: 20))
                                             .foregroundColor(colors.textColor)
@@ -91,7 +91,7 @@ struct SetView2: View {
                                 )
                                 .padding(.horizontal, 16)
                                 .onLongPressGesture {
-                                    editingCard = (index, true)
+                                    editingCard = (index, false)
                                     editText = card.question
                                 }
                             }

@@ -27,4 +27,12 @@ struct AppColorScheme {
     var buttonTextColor: Color {
         colorScheme == .dark ? Color(red: 0.05, green: 0.05, blue: 0.2) : .white
     }
+    
+    var questionLabelColor: Color {
+        colorScheme == .dark ? Color(red: 0.4, green: 0.8, blue: 1.0) : Color(red: 0.0, green: 0.5, blue: 0.8)
+    }
+    
+    var answerLabelColor: Color {
+        colorScheme == .dark ? Color(red: 0.4, green: 1.0, blue: 0.4) : Color(red: 0.0, green: 0.7, blue: 0.0)
+    }
 } 

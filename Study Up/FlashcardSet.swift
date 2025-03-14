@@ -13,8 +13,18 @@ struct Flashcard : Identifiable {
     let answer : String
 }
 
-struct FlashcardSet : Identifiable {
+struct FlashcardSet : Identifiable, Hashable {
     let id = UUID()
     let title : String
     let flashcards : [Flashcard]
+    
+    // Implement Hashable
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+    
+    // Implement Equatable (required by Hashable)
+    static func == (lhs: FlashcardSet, rhs: FlashcardSet) -> Bool {
+        lhs.id == rhs.id
+    }
 }

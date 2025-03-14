@@ -12,6 +12,7 @@ struct HomeView: View {
     @State private var isExpanded = false
     @State private var searchText = ""
     @State private var isSearchExpanded = false
+    @State private var newSet: FlashcardSet? = nil
     @FocusState private var isSearchFocused: Bool
     
     // Use shared color scheme
@@ -72,8 +73,16 @@ struct HomeView: View {
                         isExpanded: $isExpanded,
                         colors: colors,
                         onNewSet: {
-                            let newSet = FlashcardSet(title: "Untitled Set", flashcards: [])
-                            flashcardSets.append(newSet)
+                            let set = FlashcardSet(title: "Untitled Set", flashcards: [])
+                            // First, set the navigation target to immediately navigate
+                            newSet = set
+                            
+                            // Then, add the set to the grid with a delay
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                    flashcardSets.append(set)
+                                }
+                            }
                         }
                     )
                     .zIndex(isExpanded ? 2 : 0)  // Bring to front when expanded
@@ -110,6 +119,9 @@ struct HomeView: View {
                 .padding(.horizontal, 20)
             }
             .background(colors.backgroundColor)
+            .navigationDestination(item: $newSet) { set in
+                SetView2(flashcardSet: set)
+            }
         }
     }
 }
