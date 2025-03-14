@@ -4,6 +4,7 @@ struct AddButton: View {
     @Binding var isExpanded: Bool
     let colors: AppColorScheme
     let onNewSet: () -> Void
+    @State private var hasAddedSet = false
     
     var body: some View {
         ZStack {
@@ -28,16 +29,20 @@ struct AddButton: View {
                         }
                         
                         Button(action: {
-                            onNewSet()
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                isExpanded = false
+                            if !hasAddedSet {
+                                hasAddedSet = true  // Set this first to prevent multiple rapid clicks
+                                onNewSet()
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                    isExpanded = false
+                                }
                             }
                         }) {
                             Text("New Set")
                                 .font(.headline)
-                                .foregroundColor(colors.buttonTextColor)
+                                .foregroundColor(colors.buttonTextColor.opacity(hasAddedSet ? 0.5 : 1))
                                 .frame(maxWidth: .infinity)
                         }
+                        .disabled(hasAddedSet)
                     }
                     .opacity(isExpanded ? 1 : 0)
                 }
@@ -63,7 +68,12 @@ struct AddButton: View {
         .contentShape(Rectangle())  // Make entire frame tappable
         .onTapGesture {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                isExpanded.toggle()
+                if !isExpanded {
+                    isExpanded = true
+                    hasAddedSet = false  // Only reset when expanding
+                } else {
+                    isExpanded = false
+                }
             }
         }
     }
