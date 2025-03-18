@@ -2,6 +2,27 @@ import SwiftUI
 import CoreMotion
 import AVFoundation
 
+// Add AppDelegate to handle orientation
+class AppDelegate: NSObject, UIApplicationDelegate {
+    static var orientationLock = UIInterfaceOrientationMask.landscape {
+        didSet {
+            if #available(iOS 16.0, *) {
+                UIApplication.shared.connectedScenes.forEach { scene in
+                    if let windowScene = scene as? UIWindowScene {
+                        windowScene.requestGeometryUpdate(.iOS(interfaceOrientations: .landscape))
+                    }
+                }
+            } else {
+                UIDevice.current.setValue(UIInterfaceOrientation.landscapeRight.rawValue, forKey: "orientation")
+            }
+        }
+    }
+    
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        return .landscape
+    }
+}
+
 struct HorizontalFlashcardView: View {
     let flashcardSet: FlashcardSet
     @State private var currentIndex = 0
@@ -13,6 +34,7 @@ struct HorizontalFlashcardView: View {
     @State private var audioPlayer: AVAudioPlayer?
     @State private var showEndStudy = false
     @Environment(\.dismiss) private var dismiss
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     var body: some View {
         GeometryReader { geometry in
@@ -122,10 +144,12 @@ struct HorizontalFlashcardView: View {
                     startMotionUpdates()
                     startTimer()
                     setupAudioPlayer()
+                    AppDelegate.orientationLock = .landscape
                 }
                 .onDisappear {
                     stopMotionUpdates()
                     stopTimer()
+                    AppDelegate.orientationLock = .all
                 }
             } else {
                 EndStudyView(flashcardSet: flashcardSet)
@@ -198,10 +222,8 @@ struct HorizontalFlashcardView: View {
     }
     
     private func moveToNextCard() {
-        if currentIndex < flashcardSet.flashcards.count - 1 {
+        if currentIndex < flashcardSet.flashcards.count {
             currentIndex += 1
-        } else {
-            showEndStudy = true
         }
     }
 }

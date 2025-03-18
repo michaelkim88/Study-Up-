@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct HomeView: View {
     @Environment(\.colorScheme) var colorScheme
@@ -15,13 +16,15 @@ struct HomeView: View {
     @State private var newSet: FlashcardSet? = nil
     @FocusState private var isSearchFocused: Bool
     
+    @Environment(\.modelContext) private var modelContext
+    
     // Use shared color scheme
     private var colors: AppColorScheme {
         AppColorScheme(colorScheme: colorScheme)
     }
     
     // Make flashcardSets mutable with @State, initialized with sample data
-    @State private var flashcardSets: [FlashcardSet] = SampleFlashcardData.sampleSets
+    @Query private var flashcardSets: [FlashcardSet]
     
     let columns: [GridItem] = [
         GridItem(.flexible()),
@@ -75,14 +78,15 @@ struct HomeView: View {
                         onNewSet: {
                             let set = FlashcardSet(title: "Untitled Set", flashcards: [])
                             // First, set the navigation target to immediately navigate
-                            newSet = set
                             
+                            newSet = set
                             // Then, add the set to the grid with a delay
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                    flashcardSets.append(set)
+                                    modelContext.insert(set)
                                 }
                             }
+                            
                         }
                     )
                     .zIndex(isExpanded ? 2 : 0)  // Bring to front when expanded

@@ -35,6 +35,7 @@ struct AddButton: View {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                     isExpanded = false
                                 }
+                                
                             }
                         }) {
                             Text("New Set")

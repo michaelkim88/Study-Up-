@@ -6,25 +6,30 @@
 //
 
 import Foundation
+import SwiftData
 
-struct Flashcard : Identifiable {
-    let id = UUID()
-    let question : String
-    let answer : String
+@Model
+class Flashcard {
+    var question: String
+    var answer: String
+
+    var id: PersistentIdentifier { persistentModelID } // Unique identifier
+
+    init(question: String, answer: String) {
+        self.question = question
+        self.answer = answer
+    }
 }
 
-struct FlashcardSet : Identifiable, Hashable {
-    let id = UUID()
-    let title : String
-    let flashcards : [Flashcard]
-    
-    // Implement Hashable
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-    
-    // Implement Equatable (required by Hashable)
-    static func == (lhs: FlashcardSet, rhs: FlashcardSet) -> Bool {
-        lhs.id == rhs.id
+@Model
+class FlashcardSet {
+    var title: String
+    var flashcards: [Flashcard]
+
+    var id: PersistentIdentifier { persistentModelID } // Unique identifier
+
+    init(title: String, flashcards: [Flashcard] = []) {
+        self.title = title
+        self.flashcards = flashcards
     }
 }
