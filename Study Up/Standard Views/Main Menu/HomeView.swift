@@ -42,6 +42,7 @@ struct HomeView: View {
                                     FlashcardSetGridItem(set: set, colors: colors)
                                 }
                             }
+
                         }
                         .padding()
                         .padding(.bottom, geometry.safeAreaInsets.bottom + 150)
@@ -131,5 +132,17 @@ struct HomeView: View {
 }
 
 #Preview {
-    HomeView()
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+    let container = try! ModelContainer(for: FlashcardSet.self, configurations: config)
+    
+    // Add some sample data for preview
+    let context = container.mainContext
+    let sampleSet = FlashcardSet(title: "Sample Set", flashcards: [
+        Flashcard(question: "What is 2+2?", answer: "4"),
+        Flashcard(question: "What is the capital of France?", answer: "Paris")
+    ])
+    context.insert(sampleSet)
+    
+    return HomeView()
+        .modelContainer(container)
 }

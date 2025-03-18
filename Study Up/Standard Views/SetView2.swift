@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct SetView2: View {
     let flashcardSet: FlashcardSet
@@ -15,6 +16,8 @@ struct SetView2: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) var colorScheme
     
+    @Environment(\.modelContext) private var modelContext
+    
     // Use shared color scheme
     private var colors: AppColorScheme {
         AppColorScheme(colorScheme: colorScheme)
@@ -23,81 +26,143 @@ struct SetView2: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
-                GeometryReader { geometry in
-                    ScrollView(.vertical, showsIndicators: true) {
-                        VStack(spacing: 16) {
-                            // Title with back button
-                            ZStack {
-                                Text(flashcardSet.title)
-                                    .font(.system(size: 32, weight: .regular))
+
+                
+                VStack(spacing: 0) {
+                    // Title with back button
+                    ZStack {
+                        Text(flashcardSet.title)
+                            .font(.system(size: 32, weight: .regular))
+                            .foregroundColor(colors.textColor)
+                            .zIndex(1)
+                            .padding(.top, 8)
+                            .multilineTextAlignment(.center)
+                        HStack {
+                            Button(action: {
+                                dismiss()
+                            }) {
+                                Image(systemName: "chevron.left")
+                                    .font(.title2)
                                     .foregroundColor(colors.textColor)
-                                    .zIndex(1)
-                                    .padding(.top, 8)
-                                    .multilineTextAlignment(.center)
-                                HStack {
-                                    Button(action: {
-                                        dismiss()
-                                    }) {
-                                        Image(systemName: "chevron.left")
-                                            .font(.title2)
-                                            .foregroundColor(colors.textColor)
-                                            .padding()
-                                    }
-                                    Spacer()
-                                }
+                                    .padding()
                             }
-                            
-                            // Flashcards
-                            ForEach(Array(flashcardSet.flashcards.enumerated()), id: \.element.id) { index, card in
-                                VStack(alignment: .leading, spacing: 0) {
-                                    // Question
-                                    HStack(alignment: .top, spacing: 8) {
-                                        Text("Q:")
-                                            .font(.system(size: 18, weight: .medium))
-                                            .foregroundColor(colors.questionLabelColor)
-                                        Text(card.question)
-                                            .font(.system(size: 20))
-                                            .foregroundColor(colors.textColor)
-                                            .multilineTextAlignment(.leading)
-                                    }
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 12)
-                                    
-                                    // Divider
-                                    Rectangle()
-                                        .fill(colors.boxBorderColor)
-                                        .frame(height: 1)
-                                        .padding(.horizontal, 32)
-                                    
-                                    // Answer
-                                    HStack(alignment: .top, spacing: 8) {
-                                        Text("A:")
-                                            .font(.system(size: 18, weight: .medium))
-                                            .foregroundColor(colors.answerLabelColor)
-                                        Text(card.answer)
-                                            .font(.system(size: 20))
-                                            .foregroundColor(colors.textColor)
-                                            .multilineTextAlignment(.leading)
-                                    }
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 12)
-                                }
-                                .background(colors.boxColor)
-                                .cornerRadius(12)
-                                .shadow(radius: 3)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(colors.boxBorderColor, lineWidth: 1)
-                                )
-                                .padding(.horizontal, 16)
-                                .onLongPressGesture {
-                                    editingCard = (index, false)
-                                    editText = card.question
-                                }
-                            }
+                            Spacer()
                         }
-                        .padding(.vertical, 16)
-                        .padding(.bottom, geometry.safeAreaInsets.bottom + 150)
+                    }
+                    GeometryReader { geometry in
+                        ScrollView(.vertical, showsIndicators: true) {
+                            VStack(spacing: 16) {
+                                
+                                // add new item to the set
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color(red: 0.2, green: 0.8, blue: 0.4))
+                                        .shadow(radius: 5)
+                                        .padding(.horizontal, 16)
+                                        .frame(height: 70)
+                                    
+                                    Button(action: {
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                            let newCard = Flashcard(question: "New Question", answer: "New Answer")
+                                            flashcardSet.flashcards.insert(newCard, at: 0)
+                                            // Ensure changes are saved
+                                            try? modelContext.save()
+                                            
+                                            // Set up editing for the new card (question side)
+                                            let newIndex = flashcardSet.flashcards.count - 1
+                                            editingCard = (newIndex, true)
+                                            editText = "New Question"
+                                        }
+                                    }) {
+                                        Text("Add new Card")
+                                            .font(.headline)
+                                            .foregroundColor(colors.buttonTextColor)
+                                            .frame(maxWidth: .infinity)
+                                    }
+                                }
+
+                                // Flashcards
+                                ForEach(Array(flashcardSet.flashcards.enumerated()), id: \.element.id) { index, card in
+                                    VStack(alignment: .leading, spacing: 0) {
+                                        // Question
+                                        HStack(alignment: .top, spacing: 8) {
+                                            Text("Q:")
+                                                .font(.system(size: 18, weight: .medium))
+                                                .foregroundColor(colors.questionLabelColor)
+                                            Text(card.question)
+                                                .font(.system(size: 20))
+                                                .foregroundColor(colors.textColor)
+                                                .multilineTextAlignment(.leading)
+                                        }
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 12)
+                                        
+                                        // Divider
+                                        Rectangle()
+                                            .fill(colors.boxBorderColor)
+                                            .frame(height: 1)
+                                            .padding(.horizontal, 32)
+                                        
+                                        // Answer
+                                        HStack(alignment: .top, spacing: 8) {
+                                            Text("A:")
+                                                .font(.system(size: 18, weight: .medium))
+                                                .foregroundColor(colors.answerLabelColor)
+                                            Text(card.answer)
+                                                .font(.system(size: 20))
+                                                .foregroundColor(colors.textColor)
+                                                .multilineTextAlignment(.leading)
+                                        }
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 12)
+                                    }
+                                    .background(colors.boxColor)
+                                    .cornerRadius(12)
+                                    .shadow(radius: 3)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(colors.boxBorderColor, lineWidth: 1)
+                                    )
+                                    .padding(.horizontal, 16)
+                                    .onLongPressGesture {
+                                        editingCard = (index, false)
+                                        editText = card.question
+                                    }
+                                }
+                                
+                                // add new item to the set
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color(red: 0.2, green: 0.8, blue: 0.4))
+                                        .shadow(radius: 5)
+                                        .padding(.horizontal, 16)
+                                        .frame(height: 70)
+                                    
+                                    Button(action: {
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                            let newCard = Flashcard(question: "New Question", answer: "New Answer")
+                                            flashcardSet.flashcards.append(newCard)
+                                            // Ensure changes are saved
+                                            try? modelContext.save()
+                                            
+                                            // Set up editing for the new card (question side)
+                                            let newIndex = flashcardSet.flashcards.count - 1
+                                            editingCard = (newIndex, true)
+                                            editText = "New Question"
+                                        }
+                                    }) {
+                                        Text("Add new Card")
+                                            .font(.headline)
+                                            .foregroundColor(colors.buttonTextColor)
+                                            .frame(maxWidth: .infinity)
+                                    }
+                                }
+                                
+                                
+                            }
+                            .padding(.vertical, 16)
+                            .padding(.bottom, geometry.safeAreaInsets.bottom + 150)
+                        }
                     }
                 }
                 
