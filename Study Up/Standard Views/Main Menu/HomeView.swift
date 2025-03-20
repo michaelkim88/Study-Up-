@@ -45,11 +45,13 @@ struct HomeView: View {
                                     }
                                 }
                             }
-                            .padding()
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 20)
                             .padding(.bottom, geometry.safeAreaInsets.bottom + 150)
-                            .frame(width: geometry.size.width)
                         }
+                        .frame(width: UIScreen.main.bounds.width - 20)
                     }
+                    .frame(width: UIScreen.main.bounds.width - 20)
                     .allowsHitTesting(!isSearchExpanded && !isExpanded)
                 }
                 
