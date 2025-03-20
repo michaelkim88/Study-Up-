@@ -34,20 +34,33 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
-                GeometryReader { geometry in
-                    ScrollView {
-                        LazyVGrid(columns: columns, spacing: 20) {
-                            ForEach(flashcardSets) { set in
-                                NavigationLink(destination: SetView2(flashcardSet: set)) {
-                                    FlashcardSetGridItem(set: set, colors: colors)
+                // Background layer with tap gesture
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            isSearchExpanded = false
+                            isSearchFocused = false
+                        }
+                    }
+                
+                // Main content
+                VStack(spacing: 0) {
+                    GeometryReader { geometry in
+                        ScrollView {
+                            LazyVGrid(columns: columns, spacing: 20) {
+                                ForEach(flashcardSets) { set in
+                                    NavigationLink(destination: SetView2(flashcardSet: set)) {
+                                        FlashcardSetGridItem(set: set, colors: colors)
+                                    }
                                 }
                             }
-
+                            .padding()
+                            .padding(.bottom, geometry.safeAreaInsets.bottom + 150)
+                            .frame(width: geometry.size.width)
                         }
-                        .padding()
-                        .padding(.bottom, geometry.safeAreaInsets.bottom + 150)
-                        .frame(width: geometry.size.width)
                     }
+                    .allowsHitTesting(!isSearchExpanded)
                 }
                 
                 // Top cutoff overlay
@@ -55,6 +68,7 @@ struct HomeView: View {
                     Rectangle()
                         .fill(colors.cutoffColor)
                         .frame(height: 60)
+                        .allowsHitTesting(!isSearchExpanded)
                     Spacer()
                 }
                 .frame(maxWidth: .infinity)
@@ -66,43 +80,46 @@ struct HomeView: View {
                     Rectangle()
                         .fill(colors.cutoffColor)
                         .frame(height: 120)
+                        .allowsHitTesting(!isSearchExpanded)
                 }
                 .frame(maxWidth: .infinity)
                 .ignoresSafeArea(.all, edges: .bottom)
                 
                 // Button Row
-                ZStack(alignment: .center) {
+                HStack(spacing: 4) {
+                    // Search Bar Container
+                    HStack(alignment: .center) {
+                        SearchBar(
+                            isExpanded: $isSearchExpanded,
+                            searchText: $searchText,
+                            isFocused: $isSearchFocused,
+                            colors: colors
+                        )
+                        .frame(width: isSearchExpanded ? UIScreen.main.bounds.width - 40 : 50)
+                        .zIndex(isSearchExpanded ? 1 : 0)
+                    }
+                    .frame(width: 50, alignment: .leading)
+                    
+                    Spacer()
+                    
                     // Add Button
                     AddButton(
                         isExpanded: $isExpanded,
                         colors: colors,
                         onNewSet: {
                             let set = FlashcardSet(title: "Untitled Set", flashcards: [])
-                            // First, set the navigation target to immediately navigate
-                            
                             newSet = set
-                            // Then, add the set to the grid with a delay
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                     modelContext.insert(set)
                                 }
                             }
-                            
                         }
                     )
-                    .zIndex(isExpanded ? 2 : 0)  // Bring to front when expanded
+                    .zIndex(isExpanded ? 2 : 0)
                     .opacity(isSearchExpanded ? 0 : 1)
                     
-                    // Search Bar
-                    SearchBar(
-                        isExpanded: $isSearchExpanded,
-                        searchText: $searchText,
-                        isFocused: $isSearchFocused,
-                        colors: colors
-                    )
-                    .offset(x: isExpanded ? -UIScreen.main.bounds.width : -((UIScreen.main.bounds.width * 0.6) / 2 + 35))
-                    .zIndex(isSearchExpanded ? 1 : 0)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isExpanded)
+                    Spacer()
                     
                     // Profile Button
                     Button(action: {
@@ -116,12 +133,11 @@ struct HomeView: View {
                             .clipShape(Circle())
                             .shadow(radius: 5)
                     }
-                    .offset(x: isExpanded ? UIScreen.main.bounds.width : ((UIScreen.main.bounds.width * 0.6) / 2 + 35))
                     .opacity(isSearchExpanded ? 0 : 1)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isExpanded)
                 }
                 .padding(.bottom, 10)
-                .padding(.horizontal, 20)
+                .padding(.leading, 20)
+                .padding(.trailing, 20)
             }
             .background(colors.backgroundColor)
             .navigationDestination(item: $newSet) { set in

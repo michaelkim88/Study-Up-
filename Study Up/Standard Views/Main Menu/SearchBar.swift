@@ -38,7 +38,13 @@ struct SearchBar: View {
             }
             .padding(.leading, 15)
         }
-        .frame(width: isExpanded ? ((UIScreen.main.bounds.width * 0.6) / 2 + 35 + 50 + 40) : 50, height: 50)
+        .frame(height: 50)
         .contentShape(Rectangle())
+        .onTapGesture {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                isExpanded = true
+                isFocused = true
+            }
+        }
     }
 } 
