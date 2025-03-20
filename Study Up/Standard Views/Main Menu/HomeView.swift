@@ -34,16 +34,6 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
-                // Background layer with tap gesture
-                Color.clear
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                            isSearchExpanded = false
-                            isSearchFocused = false
-                        }
-                    }
-                
                 // Main content
                 VStack(spacing: 0) {
                     GeometryReader { geometry in
@@ -60,7 +50,7 @@ struct HomeView: View {
                             .frame(width: geometry.size.width)
                         }
                     }
-                    .allowsHitTesting(!isSearchExpanded)
+                    .allowsHitTesting(!isSearchExpanded && !isExpanded)
                 }
                 
                 // Top cutoff overlay
@@ -68,7 +58,7 @@ struct HomeView: View {
                     Rectangle()
                         .fill(colors.cutoffColor)
                         .frame(height: 60)
-                        .allowsHitTesting(!isSearchExpanded)
+                        .allowsHitTesting(!isSearchExpanded && !isExpanded)
                     Spacer()
                 }
                 .frame(maxWidth: .infinity)
@@ -80,7 +70,7 @@ struct HomeView: View {
                     Rectangle()
                         .fill(colors.cutoffColor)
                         .frame(height: 120)
-                        .allowsHitTesting(!isSearchExpanded)
+                        .allowsHitTesting(!isSearchExpanded && !isExpanded)
                 }
                 .frame(maxWidth: .infinity)
                 .ignoresSafeArea(.all, edges: .bottom)
@@ -138,6 +128,14 @@ struct HomeView: View {
                 .padding(.bottom, 10)
                 .padding(.leading, 20)
                 .padding(.trailing, 20)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    isSearchExpanded = false
+                    isSearchFocused = false
+                    isExpanded = false
+                }
             }
             .background(colors.backgroundColor)
             .navigationDestination(item: $newSet) { set in
