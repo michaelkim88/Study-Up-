@@ -3,7 +3,7 @@ import SwiftUI
 struct FlashcardSetGridItem: View {
     let set: FlashcardSet
     let colors: AppColorScheme
-    
+        
     var body: some View {
         VStack {
             Text(set.title)
@@ -26,4 +26,5 @@ struct FlashcardSetGridItem: View {
         )
         .padding(.horizontal, 4)
     }
-} 
+
+}

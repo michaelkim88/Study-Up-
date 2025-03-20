@@ -42,6 +42,7 @@ struct HomeView: View {
                                     FlashcardSetGridItem(set: set, colors: colors)
                                 }
                             }
+
                         }
                         .padding()
                         .padding(.bottom, geometry.safeAreaInsets.bottom + 150)
@@ -132,9 +133,7 @@ struct HomeView: View {
 
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try! ModelContainer(for: FlashcardSet.self, configurations: config)
-
-
-        return HomeView()
-            .modelContainer(container)
+    let container = try! ModelContainer(for: FlashcardSet.self, configurations: config)
+    return HomeView()
+        .modelContainer(container)
 }
