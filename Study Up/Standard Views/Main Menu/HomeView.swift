@@ -9,9 +9,6 @@ import SwiftUI
 import SwiftData
 import Foundation
 
-// Import sample data for preview
-@_implementationOnly import Study_Up
-
 struct HomeView: View {
     @Environment(\.colorScheme) var colorScheme
     @State private var isExpanded = false
@@ -166,35 +163,8 @@ struct HomeView: View {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: FlashcardSet.self, configurations: config)
     
-    // Create sample flashcard sets
-    let sampleSets = [
-        FlashcardSet(title: "Math Basics", flashcards: [
-            Flashcard(question: "What is 2+2?", answer: "4"),
-            Flashcard(question: "What is 7 x 8?", answer: "56"),
-            Flashcard(question: "What is the square root of 16?", answer: "4")
-        ]),
-        
-        FlashcardSet(title: "History", flashcards: [
-            Flashcard(question: "Who discovered America?", answer: "Columbus"),
-            Flashcard(question: "In what year did World War II end?", answer: "1945"),
-            Flashcard(question: "Who was the first President of the United States?", answer: "George Washington")
-        ]),
-        
-        FlashcardSet(title: "Science", flashcards: [
-            Flashcard(question: "What is H2O?", answer: "Water"),
-            Flashcard(question: "What is the closest planet to the Sun?", answer: "Mercury"),
-            Flashcard(question: "What is the hardest natural substance?", answer: "Diamond")
-        ]),
-        
-        FlashcardSet(title: "Language Basics", flashcards: [
-            Flashcard(question: "Hola means?", answer: "Hello"),
-            Flashcard(question: "Bonjour means?", answer: "Good day/Hello"),
-            Flashcard(question: "Gracias means?", answer: "Thank you")
-        ])
-    ]
-    
-    // Add sample sets to the container
-    for sampleSet in sampleSets {
+    // Populate with sample flashcard sets
+    for sampleSet in SampleFlashcardData.sampleSets {
         container.mainContext.insert(sampleSet)
     }
     
