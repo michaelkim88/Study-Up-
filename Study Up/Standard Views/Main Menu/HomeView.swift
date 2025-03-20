@@ -131,5 +131,10 @@ struct HomeView: View {
 }
 
 #Preview {
-    HomeView()
+    let config = ModelConfiguration(isStoredInMemoryOnly: true)
+        let container = try! ModelContainer(for: FlashcardSet.self, configurations: config)
+
+
+        return HomeView()
+            .modelContainer(container)
 }
