@@ -124,10 +124,6 @@ struct SetView2: View {
                                             .stroke(colors.boxBorderColor, lineWidth: 1)
                                     )
                                     .padding(.horizontal, 16)
-                                    .onLongPressGesture {
-                                        editingCard = (index, false)
-                                        editText = card.question
-                                    }
                                 }
                                 
                                 // add new item to the set
@@ -161,30 +157,30 @@ struct SetView2: View {
                                 
                             }
                             .padding(.vertical, 16)
-                            .padding(.bottom, geometry.safeAreaInsets.bottom + 150)
                         }
                     }
+                    
+                    // Bottom cutoff overlay
+                    VStack(spacing: 0) {
+                        Rectangle()
+                            .fill(colors.cutoffColor)
+                            .frame(height: 80)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .ignoresSafeArea(.all, edges: .bottom)
+                    
+                    
                 }
                 
-                // Top cutoff overlay
-                VStack {
-                    Rectangle()
-                        .fill(colors.cutoffColor)
-                        .frame(height: 60)
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity)
-                .ignoresSafeArea(.all, edges: .top)
-                
-                // Bottom cutoff overlay
-                VStack(spacing: 0) {
-                    Spacer()
-                    Rectangle()
-                        .fill(colors.cutoffColor)
-                        .frame(height: 120)
-                }
-                .frame(maxWidth: .infinity)
-                .ignoresSafeArea(.all, edges: .bottom)
+//                // Top cutoff overlay
+//                VStack {
+//                    Rectangle()
+//                        .fill(colors.cutoffColor)
+//                        .frame(height: 60)
+//                    Spacer()
+//                }
+//                .frame(maxWidth: .infinity)
+//                .ignoresSafeArea(.all, edges: .top)
                 
                 VStack(spacing: 0) {
                     // Menu Options
@@ -258,6 +254,7 @@ struct SetView2: View {
                     .padding(.bottom, 10)
                     .padding(.horizontal, 20)
                 }
+                
             }
             .background(colors.backgroundColor)
             .navigationBarBackButtonHidden(true)

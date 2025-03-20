@@ -48,6 +48,17 @@ struct HomeView: View {
             ZStack(alignment: .bottom) {
                 // Main content
                 VStack(spacing: 0) {
+                    HStack {
+                        Button(action: {
+                            
+                        }) {
+                            Image(systemName: "checkmark.circle")
+                                .padding([.top, .horizontal], 10)
+                        }
+                        
+                        Spacer()
+                    }
+                    
                     GeometryReader { geometry in
                         ScrollView {
                             LazyVGrid(columns: columns, spacing: 20) {
@@ -79,7 +90,7 @@ struct HomeView: View {
                 .ignoresSafeArea(.all, edges: .top)
                 
                 // Bottom cutoff overlay
-                VStack(spacing: 0) {
+                VStack(alignment: .center, spacing: 0) {
                     Spacer()
                     Rectangle()
                         .fill(colors.cutoffColor)
@@ -99,7 +110,7 @@ struct HomeView: View {
                             isFocused: $isSearchFocused,
                             colors: colors
                         )
-                        .frame(width: isSearchExpanded ? UIScreen.main.bounds.width - 40 : 50)
+                        .frame(width: isSearchExpanded ? UIScreen.main.bounds.width - 30 : 50)
                         .zIndex(isSearchExpanded ? 1 : 0)
                     }
                     .frame(width: 50, alignment: .leading)

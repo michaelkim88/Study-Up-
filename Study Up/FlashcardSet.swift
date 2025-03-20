@@ -28,6 +28,7 @@ class FlashcardSet {
     var title: String
     var flashcards: [Flashcard]
     var creationDate: Date
+    var totalCards: Int = 0
 
     var id: PersistentIdentifier { persistentModelID } // Unique identifier
 
@@ -35,5 +36,14 @@ class FlashcardSet {
         self.title = title
         self.flashcards = flashcards
         self.creationDate = Date()  // Set creation time
+    }
+}
+
+@Model
+class SetTracker {
+    var totalSets: Int = 0
+    
+    init() {
+        
     }
 }
