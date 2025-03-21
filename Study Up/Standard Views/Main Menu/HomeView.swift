@@ -61,6 +61,14 @@ struct HomeView: View {
                     
                     GeometryReader { geometry in
                         ScrollView {
+                            if (filteredFlashcardSets.isEmpty) {
+                                VStack {
+                                    Text("No Results Found")
+                                        .font(.title)
+                                        .foregroundColor(colors.textColor)
+                                        .padding()
+                                }
+                            }
                             LazyVGrid(columns: columns, spacing: 20) {
                                 ForEach(filteredFlashcardSets) { set in
                                     NavigationLink(destination: SetView2(flashcardSet: set)) {
