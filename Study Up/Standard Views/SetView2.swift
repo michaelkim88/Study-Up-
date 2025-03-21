@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct SetView2: View {
-    @Bindable var flashcardSet: FlashcardSet
+    let flashcardSet: FlashcardSet
     @State private var editingCard: (index: Int, isQuestion: Bool)? = nil
     @State private var editText: String = ""
     @State private var isMenuExpanded = false
@@ -17,8 +17,6 @@ struct SetView2: View {
     @Environment(\.colorScheme) var colorScheme
     
     @Environment(\.modelContext) private var modelContext
-    
-    @FocusState private var isTextFieldFocused: Bool
     
     // Use shared color scheme
     private var colors: AppColorScheme {
@@ -28,21 +26,19 @@ struct SetView2: View {
     var body: some View {
         NavigationStack {
             ZStack(alignment: .bottom) {
+
+                
                 VStack(spacing: 0) {
                     // Title with back button
                     ZStack {
-                        TextField("Enter Title", text: $flashcardSet.title)
-                            .padding(.vertical, 5) // Optional: Adjust spacing
-                            .background(Color.clear) // Removes background
-                            .border(Color.clear, width: 0) // Ensures no border
+                        Text(flashcardSet.title)
                             .font(.system(size: 32, weight: .regular))
                             .foregroundColor(colors.textColor)
+                            .zIndex(1)
                             .padding(.top, 8)
                             .multilineTextAlignment(.center)
-                        
                         HStack {
                             Button(action: {
-                                try? modelContext.save()
                                 dismiss()
                             }) {
                                 Image(systemName: "chevron.left")
@@ -52,138 +48,116 @@ struct SetView2: View {
                             }
                             Spacer()
                         }
-                        .zIndex(1)
                     }
                     GeometryReader { geometry in
-                        List {
-                            // Add new card button (at the top)
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color(red: 0.2, green: 0.8, blue: 0.4))
-                                    .shadow(radius: 5)
-                                    .frame(height: 70)
+                        ScrollView(.vertical, showsIndicators: true) {
+                            VStack(spacing: 16) {
                                 
-                                Button(action: {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                        let newCard = Flashcard(question: "New Question", answer: "New Answer")
-                                        flashcardSet.flashcards.insert(newCard, at: 0)
-                                        // Ensure changes are saved
-                                    }
-                                }) {
-                                    Text("Add new Card")
-                                        .font(.headline)
-                                        .foregroundColor(colors.buttonTextColor)
-                                        .frame(maxWidth: .infinity)
-                                }
-                            }
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                            .listRowBackground(Color.clear)
-
-                            // Flashcards
-                            ForEach(Array(flashcardSet.flashcards.enumerated()), id: \.element.id) { index, card in
-                                VStack(alignment: .leading, spacing: 0) {
-                                    // Question
-                                    HStack(alignment: .top, spacing: 8) {
-                                        Text("Q:")
-                                            .font(.system(size: 18, weight: .medium))
-                                            .foregroundColor(colors.questionLabelColor)
-                                        TextEditor(text: Binding(
-                                            get: { flashcardSet.flashcards[index].question },
-                                            set: { flashcardSet.flashcards[index].question = $0 }
-                                        ))
-                                        .font(.system(size: 20))
-                                        .foregroundColor(colors.textColor)
-                                        .multilineTextAlignment(.leading)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                        .frame(minHeight: 20)
-                                        .background(Color.clear)
-                                        .scrollDisabled(true) // Disable scrolling
-                                    }
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 12)
+                                // add new item to the set
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color(red: 0.2, green: 0.8, blue: 0.4))
+                                        .shadow(radius: 5)
+                                        .padding(.horizontal, 16)
+                                        .frame(height: 70)
                                     
-                                    // Divider
-                                    Rectangle()
-                                        .fill(colors.boxBorderColor)
-                                        .frame(height: 1)
-                                        .padding(.horizontal, 32)
-                                    
-                                    // Answer
-                                    HStack(alignment: .top, spacing: 8) {
-                                        Text("A:")
-                                            .font(.system(size: 18, weight: .medium))
-                                            .foregroundColor(colors.answerLabelColor)
-                                        TextField("Enter Answer", text: Binding(
-                                            get: { flashcardSet.flashcards[index].answer },
-                                            set: { flashcardSet.flashcards[index].answer = $0 }
-                                        ))
-                                            .font(.system(size: 20))
-                                            .foregroundColor(colors.textColor)
-                                            .multilineTextAlignment(.leading)
-                                            .textFieldStyle(.plain)
-                                            .background(Color.clear)
-                                    }
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 12)
-                                } // really bad swipe action its very annoying. need to fix later
-                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                     Button(action: {
-                                        withAnimation {
-                                            flashcardSet.flashcards.remove(at: index)
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                            let newCard = Flashcard(question: "New Question", answer: "New Answer")
+                                            flashcardSet.flashcards.insert(newCard, at: 0)
+                                            // Ensure changes are saved
                                             try? modelContext.save()
+                                            
+                                            // Set up editing for the new card (question side)
+                                            let newIndex = flashcardSet.flashcards.count - 1
+                                            editingCard = (newIndex, true)
+                                            editText = "New Question"
                                         }
                                     }) {
-                                        // Custom button content
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 12)
-                                                .fill(Color.red)
-                                                .frame(maxWidth: .infinity)
-                                            
-                                            Image(systemName: "trash")
-                                                .font(.title2)
-                                                .foregroundColor(.white)
+                                        Text("Add new Card")
+                                            .font(.headline)
+                                            .foregroundColor(colors.buttonTextColor)
+                                            .frame(maxWidth: .infinity)
+                                    }
+                                }
+
+                                // Flashcards
+                                ForEach(Array(flashcardSet.flashcards.enumerated()), id: \.element.id) { index, card in
+                                    VStack(alignment: .leading, spacing: 0) {
+                                        // Question
+                                        HStack(alignment: .top, spacing: 8) {
+                                            Text("Q:")
+                                                .font(.system(size: 18, weight: .medium))
+                                                .foregroundColor(colors.questionLabelColor)
+                                            Text(card.question)
+                                                .font(.system(size: 20))
+                                                .foregroundColor(colors.textColor)
+                                                .multilineTextAlignment(.leading)
                                         }
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 12)
+                                        
+                                        // Divider
+                                        Rectangle()
+                                            .fill(colors.boxBorderColor)
+                                            .frame(height: 1)
+                                            .padding(.horizontal, 32)
+                                        
+                                        // Answer
+                                        HStack(alignment: .top, spacing: 8) {
+                                            Text("A:")
+                                                .font(.system(size: 18, weight: .medium))
+                                                .foregroundColor(colors.answerLabelColor)
+                                            Text(card.answer)
+                                                .font(.system(size: 20))
+                                                .foregroundColor(colors.textColor)
+                                                .multilineTextAlignment(.leading)
+                                        }
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 12)
                                     }
+                                    .background(colors.boxColor)
+                                    .cornerRadius(12)
+                                    .shadow(radius: 3)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(colors.boxBorderColor, lineWidth: 1)
+                                    )
+                                    .padding(.horizontal, 16)
                                 }
-                                .background(colors.boxColor)
-                                .cornerRadius(12)
-                                .shadow(radius: 3)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(colors.boxBorderColor, lineWidth: 1)
-                                )
-                                .listRowSeparator(.hidden)
-                                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                                .listRowBackground(Color.clear)
-                            }
-                            
-                            // Add new card button (at the bottom)
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color(red: 0.2, green: 0.8, blue: 0.4))
-                                    .shadow(radius: 5)
-                                    .frame(height: 70)
                                 
-                                Button(action: {
-                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                        let newCard = Flashcard(question: "New Question", answer: "New Answer")
-                                        flashcardSet.flashcards.append(newCard)
+                                // add new item to the set
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color(red: 0.2, green: 0.8, blue: 0.4))
+                                        .shadow(radius: 5)
+                                        .padding(.horizontal, 16)
+                                        .frame(height: 70)
+                                    
+                                    Button(action: {
+                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                            let newCard = Flashcard(question: "New Question", answer: "New Answer")
+                                            flashcardSet.flashcards.append(newCard)
+                                            // Ensure changes are saved
+                                            try? modelContext.save()
+                                            
+                                            // Set up editing for the new card (question side)
+                                            let newIndex = flashcardSet.flashcards.count - 1
+                                            editingCard = (newIndex, true)
+                                            editText = "New Question"
+                                        }
+                                    }) {
+                                        Text("Add new Card")
+                                            .font(.headline)
+                                            .foregroundColor(colors.buttonTextColor)
+                                            .frame(maxWidth: .infinity)
                                     }
-                                }) {
-                                    Text("Add new Card")
-                                        .font(.headline)
-                                        .foregroundColor(colors.buttonTextColor)
-                                        .frame(maxWidth: .infinity)
                                 }
+                                
+                                
                             }
-                            .listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-                            .listRowBackground(Color.clear)
+                            .padding(.vertical, 16)
                         }
-                        .listStyle(PlainListStyle())
-                        .environment(\.defaultMinListRowHeight, 0)
-                        .scrollContentBackground(.hidden)
                     }
                     
                     // Bottom cutoff overlay
