@@ -53,7 +53,6 @@ struct SetView2: View {
                         ScrollView(.vertical, showsIndicators: true) {
                             VStack(spacing: 16) {
                                 
-<<<<<<< Updated upstream
                                 // add new item to the set
                                 ZStack {
                                     RoundedRectangle(cornerRadius: 8)
@@ -62,7 +61,6 @@ struct SetView2: View {
                                         .padding(.horizontal, 16)
                                         .frame(height: 70)
                                     
-=======
                                 Button(action: {
                                     withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                         let newCard = Flashcard(question: "New Question", answer: "New Answer")
@@ -81,97 +79,97 @@ struct SetView2: View {
                             .listRowBackground(Color.clear)
 
                             // Flashcards
-                            ForEach(Array(flashcardSet.flashcards.enumerated()), id: \.element.id) { index, card in
-                                VStack(alignment: .leading, spacing: 0) {
-                                    // Question
-                                    HStack(alignment: .top, spacing: 8) {
-                                        Text("Q:")
-                                            .font(.system(size: 18, weight: .medium))
-                                            .foregroundColor(colors.questionLabelColor)
-                                        TextEditor(text: Binding(
-                                            get: { flashcardSet.flashcards[index].question },
-                                            set: { flashcardSet.flashcards[index].question = $0 }
-                                        ))
-                                        .font(.system(size: 20))
-                                        .multilineTextAlignment(.leading)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                        .frame(minHeight: 20)
-                                        .textFieldStyle(.plain)
-                                        .background(Color.clear)
-                                        .scrollContentBackground(.hidden) // Add this line
-                                        .scrollDisabled(true) // Disable scrolling
-                                        .overlay(
-                                            Group {
-                                                if flashcardSet.flashcards[index].question.isEmpty {
-                                                    Text("Enter Question")
-                                                        .foregroundColor(Color.gray.opacity(0.6))
-                                                        .font(.system(size: 20))
-                                                        .padding(.leading, 5)
-                                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                ForEach(Array(flashcardSet.flashcards.enumerated()), id: \.element.id) { index, card in
+                                    VStack(alignment: .leading, spacing: 0) {
+                                        // Question
+                                        HStack(alignment: .top, spacing: 8) {
+                                            Text("Q:")
+                                                .font(.system(size: 18, weight: .medium))
+                                                .foregroundColor(colors.questionLabelColor)
+                                            TextEditor(text: Binding(
+                                                get: { flashcardSet.flashcards[index].question },
+                                                set: { flashcardSet.flashcards[index].question = $0 }
+                                            ))
+                                            .font(.system(size: 20))
+                                            .multilineTextAlignment(.leading)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                            .frame(minHeight: 20)
+                                            .textFieldStyle(.plain)
+                                            .background(Color.clear)
+                                            .scrollContentBackground(.hidden) // Add this line
+                                            .scrollDisabled(true) // Disable scrolling
+                                            .overlay(
+                                                Group {
+                                                    if flashcardSet.flashcards[index].question.isEmpty {
+                                                        Text("Enter Question")
+                                                            .foregroundColor(Color.gray.opacity(0.6))
+                                                            .font(.system(size: 20))
+                                                            .padding(.leading, 5)
+                                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                                    }
                                                 }
-                                            }
-                                        )
-                                    }
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 12)
-                                    
-                                    // Divider
-                                    Rectangle()
-                                        .fill(colors.boxBorderColor)
-                                        .frame(height: 1)
-                                        .padding(.horizontal, 32)
-                                    
-                                    // Answer
-                                    HStack(alignment: .top, spacing: 8) {
-                                        Text("A:")
-                                            .font(.system(size: 18, weight: .medium))
-                                            .foregroundColor(colors.answerLabelColor)
-                                        TextEditor(text: Binding(
-                                            get: { flashcardSet.flashcards[index].answer },
-                                            set: { flashcardSet.flashcards[index].answer = $0 }
-                                        ))
-                                        .font(.system(size: 20))
-                                        .multilineTextAlignment(.leading)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                        .frame(minHeight: 20)
-                                        .textFieldStyle(.plain)
-                                        .background(Color.clear)
-                                        .scrollContentBackground(.hidden) // Add this line
-                                        .scrollDisabled(true) // Disable scrolling
-                                        .overlay(
-                                            Group {
-                                                if flashcardSet.flashcards[index].answer.isEmpty {
-                                                    Text("Enter Answer")
-                                                        .foregroundColor(Color.gray.opacity(0.6))
-                                                        .font(.system(size: 20))
-                                                        .padding(.leading, 5)
-                                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                                }
-                                            }
-                                        )
-                                    }
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 12)
-                                } // really bad swipe action its very annoying. need to fix later
-                                .swipeActions(edge: .trailing, allowsFullSwipe: true) {
->>>>>>> Stashed changes
-                                    Button(action: {
-                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                            let newCard = Flashcard(question: "New Question", answer: "New Answer")
-                                            flashcardSet.flashcards.insert(newCard, at: 0)
-                                            // Ensure changes are saved
-                                            try? modelContext.save()
-                                            
-                                            // Set up editing for the new card (question side)
-                                            let newIndex = flashcardSet.flashcards.count - 1
-                                            editingCard = (newIndex, true)
-                                            editText = "New Question"
+                                            )
                                         }
-                                    }) {
-                                        Text("Add new Card")
-                                            .font(.headline)
-                                            .foregroundColor(colors.buttonTextColor)
-                                            .frame(maxWidth: .infinity)
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 12)
+                                        
+                                        // Divider
+                                        Rectangle()
+                                            .fill(colors.boxBorderColor)
+                                            .frame(height: 1)
+                                            .padding(.horizontal, 32)
+                                        
+                                        // Answer
+                                        HStack(alignment: .top, spacing: 8) {
+                                            Text("A:")
+                                                .font(.system(size: 18, weight: .medium))
+                                                .foregroundColor(colors.answerLabelColor)
+                                            TextEditor(text: Binding(
+                                                get: { flashcardSet.flashcards[index].answer },
+                                                set: { flashcardSet.flashcards[index].answer = $0 }
+                                            ))
+                                            .font(.system(size: 20))
+                                            .multilineTextAlignment(.leading)
+                                            .fixedSize(horizontal: false, vertical: true)
+                                            .frame(minHeight: 20)
+                                            .textFieldStyle(.plain)
+                                            .background(Color.clear)
+                                            .scrollContentBackground(.hidden) // Add this line
+                                            .scrollDisabled(true) // Disable scrolling
+                                            .overlay(
+                                                Group {
+                                                    if flashcardSet.flashcards[index].answer.isEmpty {
+                                                        Text("Enter Answer")
+                                                            .foregroundColor(Color.gray.opacity(0.6))
+                                                            .font(.system(size: 20))
+                                                            .padding(.leading, 5)
+                                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                                    }
+                                                }
+                                            )
+                                        }
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 12)
+                                    } // really bad swipe action its very annoying. need to fix later
+                                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                        Button(action: {
+                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                                let newCard = Flashcard(question: "New Question", answer: "New Answer")
+                                                flashcardSet.flashcards.insert(newCard, at: 0)
+                                                // Ensure changes are saved
+                                                try? modelContext.save()
+                                                
+                                                // Set up editing for the new card (question side)
+                                                let newIndex = flashcardSet.flashcards.count - 1
+                                                editingCard = (newIndex, true)
+                                                editText = "New Question"
+                                            }
+                                        }) {
+                                            Text("Add new Card")
+                                                .font(.headline)
+                                                .foregroundColor(colors.buttonTextColor)
+                                                .frame(maxWidth: .infinity)
+                                        }
                                     }
                                 }
 
