@@ -15,6 +15,10 @@ struct SetView2: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) var colorScheme
     
+    @State private var textHeight: CGFloat = 20
+    
+    @State private var textFieldUpdateTrigger = false
+    
     @Environment(\.modelContext) private var modelContext
     
     @FocusState private var isTextFieldFocused: Bool
@@ -87,29 +91,37 @@ struct SetView2: View {
                                         Text("Q:")
                                             .font(.system(size: 18, weight: .medium))
                                             .foregroundColor(colors.questionLabelColor)
-                                        TextEditor(text: Binding(
-                                            get: { flashcardSet.flashcards[index].question },
-                                            set: { flashcardSet.flashcards[index].question = $0 }
-                                        ))
-                                        .font(.system(size: 20))
-                                        .multilineTextAlignment(.leading)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                        .frame(minHeight: 20)
-                                        .textFieldStyle(.plain)
-                                        .background(Color.clear)
-                                        .scrollContentBackground(.hidden) // Add this line
-                                        .scrollDisabled(true) // Disable scrolling
-                                        .overlay(
-                                            Group {
-                                                if flashcardSet.flashcards[index].answer.isEmpty {
+                                        VStack {
+                                            ZStack(alignment: .topLeading) {
+                                                // Placeholder Text
+                                                if flashcardSet.flashcards[index].question.isEmpty {
                                                     Text("Enter Question")
                                                         .foregroundColor(Color.gray.opacity(0.6))
                                                         .font(.system(size: 20))
-                                                        .padding(.leading, 5)
+                                                        .padding(.leading, 10)
+                                                        .padding(.top, 8)
                                                         .frame(maxWidth: .infinity, alignment: .leading)
                                                 }
+
+                                                // TextEditor with dynamic height
+                                                QuestionField(text: Binding(
+                                                    get: { flashcardSet.flashcards[index].question },
+                                                    set: { flashcardSet.flashcards[index].question = $0 }
+                                                ))
+                                                .onAppear {
+                                                    // Trigger an update after a short delay when the view appears
+                                                    triggerTextFieldUpdates()
+                                                }
+//                                                .font(.system(size: 20))
+//                                                .multilineTextAlignment(.leading)
+//                                                .fixedSize(horizontal: false, vertical: true)
+//                                                .frame(minHeight: 20)
+//                                                .textFieldStyle(.plain)
+//                                                .background(Color.clear)
+//                                                .scrollContentBackground(.hidden) // Add this line
+//                                                .scrollDisabled(true) // Disable scrolling
                                             }
-                                        )
+                                        }
                                     }
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 12)
@@ -125,51 +137,51 @@ struct SetView2: View {
                                         Text("A:")
                                             .font(.system(size: 18, weight: .medium))
                                             .foregroundColor(colors.answerLabelColor)
-                                        TextEditor(text: Binding(
-                                            get: { flashcardSet.flashcards[index].answer },
-                                            set: { flashcardSet.flashcards[index].answer = $0 }
-                                        ))
-                                        .font(.system(size: 20))
-                                        .multilineTextAlignment(.leading)
-                                        .fixedSize(horizontal: false, vertical: true)
-                                        .frame(minHeight: 20)
-                                        .textFieldStyle(.plain)
-                                        .background(Color.clear)
-                                        .scrollContentBackground(.hidden) // Add this line
-                                        .scrollDisabled(true) // Disable scrolling
-                                        .overlay(
-                                            Group {
+                                        
+                                        VStack {
+                                            ZStack(alignment: .topLeading) {
+                                                // Placeholder Text
                                                 if flashcardSet.flashcards[index].answer.isEmpty {
                                                     Text("Enter Answer")
                                                         .foregroundColor(Color.gray.opacity(0.6))
                                                         .font(.system(size: 20))
-                                                        .padding(.leading, 5)
+                                                        .padding(.leading, 10)
+                                                        .padding(.top, 8)
                                                         .frame(maxWidth: .infinity, alignment: .leading)
                                                 }
+
+                                                // TextEditor with dynamic height
+                                                AnswerField(text: Binding(
+                                                    get: { flashcardSet.flashcards[index].answer },
+                                                    set: { flashcardSet.flashcards[index].answer = $0 }
+                                                ))
+                                                .onAppear {
+                                                    // Trigger an update after a short delay when the view appears
+                                                    triggerTextFieldUpdates()
+                                                }
                                             }
-                                        )
+                                        }
                                     }
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 12)
+                                    .padding(.leading, 2) // really weird behavior with this not sure why, but we need 2 pixels of leading space
                                 } // really bad swipe action its very annoying. need to fix later
                                 .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-                                    Button(action: {
-                                        withAnimation {
-                                            flashcardSet.flashcards.remove(at: index)
-                                            try? modelContext.save()
+                                    Button(role: .destructive) {
+                                            withAnimation {
+                                                flashcardSet.flashcards.remove(at: index)
+                                                try? modelContext.save() // Save after deletion
+                                            }
+                                        } label: {
+                                            ZStack {
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .fill(Color.red)
+                                                    .frame(maxWidth: .infinity)
+                                                Image(systemName: "trash")
+                                                    .font(.title2)
+                                                    .foregroundColor(.white)
+                                            }
                                         }
-                                    }) {
-                                        // Custom button content
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 12)
-                                                .fill(Color.red)
-                                                .frame(maxWidth: .infinity)
-                                            
-                                            Image(systemName: "trash")
-                                                .font(.title2)
-                                                .foregroundColor(.white)
-                                        }
-                                    }
                                 }
                                 .background(colors.boxColor)
                                 .cornerRadius(12)
@@ -306,10 +318,59 @@ struct SetView2: View {
                     .padding(.horizontal, 20)
                 }
                 
+                if textFieldUpdateTrigger {
+                    Color.clear.frame(width: 0, height: 0)
+                } else {
+                    Color.clear.frame(width: 0, height: 0)
+                }
+                
             }
             .background(colors.backgroundColor)
             .navigationBarBackButtonHidden(true)
+            .onAppear {
+                // Trigger an update after a short delay when the view appears
+                triggerTextFieldUpdates()
+            }
         }
+    }
+    
+    func triggerTextFieldUpdates() {
+        // Toggle the trigger with a slight delay to ensure it happens after other UI operations
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            textFieldUpdateTrigger.toggle()
+        }
+    }
+}
+
+
+
+struct QuestionField: View {
+    @Binding var text: String
+    
+    var body: some View {
+        TextEditor(text: $text)
+            .font(.system(size: 20))
+            .multilineTextAlignment(.leading)
+            .background(Color.clear)
+            .scrollContentBackground(.hidden)
+            .padding([.leading, .trailing], 5)
+            .frame(minHeight: 40, maxHeight: .infinity)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+struct AnswerField: View {
+    @Binding var text: String
+    
+    var body: some View {
+        TextEditor(text: $text)
+            .font(.system(size: 20))
+            .multilineTextAlignment(.leading)
+            .background(Color.clear)
+            .scrollContentBackground(.hidden)
+            .padding([.leading, .trailing], 5)
+            .frame(minHeight: 40, maxHeight: .infinity)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }
 
