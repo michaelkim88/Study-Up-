@@ -170,6 +170,16 @@ struct HomeView: View {
                     isExpanded = false
                 }
             }
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { _ in
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            isSearchExpanded = false
+                            isSearchFocused = false
+                            isExpanded = false
+                        }
+                    }
+            )
             .background(colors.backgroundColor)
             .navigationDestination(item: $newSet) { set in
                 SetView2(flashcardSet: set)
