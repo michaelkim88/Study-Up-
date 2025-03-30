@@ -45,6 +45,8 @@ struct SetView2: View {
                         
                         HStack {
                             Button(action: {
+                                // Reindex the remaining flashcards to ensure proper ordering
+                                flashcardSet.flashcards = normalizeFlashcardIndices(flashcards: flashcardSet.flashcards)
                                 try? modelContext.save()
                                 dismiss()
                             }) {
@@ -57,6 +59,7 @@ struct SetView2: View {
                         }
                         .zIndex(1)
                     }
+                    
                     GeometryReader { geometry in
                         List {
                             // Add new card button (at the top)
@@ -68,8 +71,10 @@ struct SetView2: View {
                                 
                                 Button(action: {
                                     withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                        let newCard = Flashcard(question: "New Question", answer: "New Answer")
+                                        let newCard = Flashcard(question: "New Question", answer: "New Answer", index: 0)
                                         flashcardSet.flashcards.insert(newCard, at: 0)
+                                        // reindex after adding
+//                                        flashcardSet.flashcards = normalizeFlashcardIndices(flashcards: flashcardSet.flashcards)
                                         // Ensure changes are saved
                                     }
                                 }) {
@@ -84,17 +89,18 @@ struct SetView2: View {
                             .listRowBackground(Color.clear)
 
                             // Flashcards
-                            ForEach(Array(flashcardSet.flashcards.enumerated()), id: \.element.id) { index, card in
+                            ForEach(flashcardSet.flashcards, id: \.id) { flashcard in
                                 VStack(alignment: .leading, spacing: 0) {
                                     // Question
                                     HStack(alignment: .top, spacing: 8) {
                                         Text("Q:")
-                                            .font(.system(size: 18, weight: .medium))
+                                            .padding(.top, 8)
+                                            .font(.system(size: 20, weight: .medium))
                                             .foregroundColor(colors.questionLabelColor)
                                         VStack {
                                             ZStack(alignment: .topLeading) {
                                                 // Placeholder Text
-                                                if flashcardSet.flashcards[index].question.isEmpty {
+                                                if flashcard.question.isEmpty {
                                                     Text("Enter Question")
                                                         .foregroundColor(Color.gray.opacity(0.6))
                                                         .font(.system(size: 20))
@@ -104,22 +110,18 @@ struct SetView2: View {
                                                 }
 
                                                 // TextEditor with dynamic height
-                                                QuestionField(text: Binding(
-                                                    get: { flashcardSet.flashcards[index].question },
-                                                    set: { flashcardSet.flashcards[index].question = $0 }
+                                                CustomTextField(text: Binding(
+                                                    get: { flashcard.question },
+                                                    set: {
+                                                        if let index = flashcardSet.flashcards.firstIndex(where: { $0.id == flashcard.id }) {
+                                                            flashcardSet.flashcards[index].question = $0
+                                                        }
+                                                    }
                                                 ))
                                                 .onAppear {
                                                     // Trigger an update after a short delay when the view appears
                                                     triggerTextFieldUpdates()
                                                 }
-//                                                .font(.system(size: 20))
-//                                                .multilineTextAlignment(.leading)
-//                                                .fixedSize(horizontal: false, vertical: true)
-//                                                .frame(minHeight: 20)
-//                                                .textFieldStyle(.plain)
-//                                                .background(Color.clear)
-//                                                .scrollContentBackground(.hidden) // Add this line
-//                                                .scrollDisabled(true) // Disable scrolling
                                             }
                                         }
                                     }
@@ -135,13 +137,14 @@ struct SetView2: View {
                                     // Answer
                                     HStack(alignment: .top, spacing: 8) {
                                         Text("A:")
-                                            .font(.system(size: 18, weight: .medium))
+                                            .font(.system(size: 20, weight: .medium))
+                                            .padding(.top, 8)
                                             .foregroundColor(colors.answerLabelColor)
                                         
                                         VStack {
                                             ZStack(alignment: .topLeading) {
                                                 // Placeholder Text
-                                                if flashcardSet.flashcards[index].answer.isEmpty {
+                                                if flashcard.answer.isEmpty {
                                                     Text("Enter Answer")
                                                         .foregroundColor(Color.gray.opacity(0.6))
                                                         .font(.system(size: 20))
@@ -151,9 +154,13 @@ struct SetView2: View {
                                                 }
 
                                                 // TextEditor with dynamic height
-                                                AnswerField(text: Binding(
-                                                    get: { flashcardSet.flashcards[index].answer },
-                                                    set: { flashcardSet.flashcards[index].answer = $0 }
+                                                CustomTextField(text: Binding(
+                                                    get: { flashcard.answer },
+                                                    set: {
+                                                        if let index = flashcardSet.flashcards.firstIndex(where: { $0.id == flashcard.id }) {
+                                                            flashcardSet.flashcards[index].answer = $0
+                                                        }
+                                                    }
                                                 ))
                                                 .onAppear {
                                                     // Trigger an update after a short delay when the view appears
@@ -165,23 +172,27 @@ struct SetView2: View {
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 12)
                                     .padding(.leading, 2) // really weird behavior with this not sure why, but we need 2 pixels of leading space
-                                } // really bad swipe action its very annoying. need to fix later
+                                }
                                 .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                     Button(role: .destructive) {
-                                            withAnimation {
+                                        withAnimation {
+                                            // Find the index of the flashcard to be deleted
+                                            if let index = flashcardSet.flashcards.firstIndex(where: { $0.id == flashcard.id }) {
                                                 flashcardSet.flashcards.remove(at: index)
+                                                
                                                 try? modelContext.save() // Save after deletion
                                             }
-                                        } label: {
-                                            ZStack {
-                                                RoundedRectangle(cornerRadius: 12)
-                                                    .fill(Color.red)
-                                                    .frame(maxWidth: .infinity)
-                                                Image(systemName: "trash")
-                                                    .font(.title2)
-                                                    .foregroundColor(.white)
-                                            }
                                         }
+                                    } label: {
+                                        ZStack {
+                                            RoundedRectangle(cornerRadius: 12)
+                                                .fill(Color.red)
+                                                .frame(maxWidth: .infinity)
+                                            Image(systemName: "trash")
+                                                .font(.title2)
+                                                .foregroundColor(.white)
+                                        }
+                                    }
                                 }
                                 .background(colors.boxColor)
                                 .cornerRadius(12)
@@ -204,8 +215,10 @@ struct SetView2: View {
                                 
                                 Button(action: {
                                     withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                        let newCard = Flashcard(question: "New Question", answer: "New Answer")
+                                        let newCard = Flashcard(question: "New Question", answer: "New Answer", index: -1)
                                         flashcardSet.flashcards.append(newCard)
+                                        // reindex after adding
+//                                        flashcardSet.flashcards = normalizeFlashcardIndices(flashcards: flashcardSet.flashcards)
                                     }
                                 }) {
                                     Text("Add new Card")
@@ -342,24 +355,50 @@ struct SetView2: View {
     }
 }
 
-
-
-struct QuestionField: View {
-    @Binding var text: String
-    
-    var body: some View {
-        TextEditor(text: $text)
-            .font(.system(size: 20))
-            .multilineTextAlignment(.leading)
-            .background(Color.clear)
-            .scrollContentBackground(.hidden)
-            .padding([.leading, .trailing], 5)
-            .frame(minHeight: 40, maxHeight: .infinity)
-            .fixedSize(horizontal: false, vertical: true)
+func normalizeFlashcardIndices(flashcards: [Flashcard]) -> [Flashcard] {
+    // First sort the flashcards with special handling for 0 and -1
+    let sortedFlashcards = flashcards.sorted { (card1, card2) -> Bool in
+        // Special case: If index is 0, it goes to the beginning
+        if card1.index == 0 {
+            return true  // card1 comes before card2
+        }
+        if card2.index == 0 {
+            return false // card2 comes before card1
+        }
+        
+        // Special case: If index is -1, it goes to the end
+        if card1.index == -1 {
+            return false // card1 comes after card2
+        }
+        if card2.index == -1 {
+            return true  // card2 comes after card1
+        }
+        
+        // Normal case: Sort by index
+        return card1.index < card2.index
     }
+    
+    // Create a copy of the sorted flashcards with normalized indices
+    var normalizedFlashcards = [Flashcard]()
+    
+    // Assign new sequential indices starting from 1
+    for (newIndex, flashcard) in sortedFlashcards.enumerated() {
+        let updatedFlashcard = Flashcard(question: flashcard.question,
+                                        answer: flashcard.answer,
+                                        index: newIndex + 1) // +1 to start from 1 instead of 0
+        
+        // Copy the creation date from the original flashcard
+        updatedFlashcard.creationDate = flashcard.creationDate
+        
+        normalizedFlashcards.append(updatedFlashcard)
+    }
+    
+    return normalizedFlashcards
 }
 
-struct AnswerField: View {
+
+
+struct CustomTextField: View {
     @Binding var text: String
     
     var body: some View {
@@ -404,11 +443,11 @@ struct MenuOptionButton: View {
 
 #Preview {
     SetView2(flashcardSet: FlashcardSet(title: "Science", flashcards: [
-        Flashcard(question: "What is H2O?", answer: "Water"),
-        Flashcard(question: "What is the closest planet to the Sun?", answer: "Mercury"),
-        Flashcard(question: "What is the hardest natural substance?", answer: "Diamond"),
-        Flashcard(question: "What is the speed of light?", answer: "299,792,458 meters per second"),
-        Flashcard(question: "What is the largest organ in the human body?", answer: "Skin"),
-        Flashcard(question: "What is the process of plants making food called?", answer: "Photosynthesis")
+        Flashcard(question: "What is H2O?", answer: "Water", index: 0),
+        Flashcard(question: "What is the closest planet to the Sun?", answer: "Mercury", index: 1),
+        Flashcard(question: "What is the hardest natural substance?", answer: "Diamond", index: 2),
+        Flashcard(question: "What is the speed of light?", answer: "299,792,458 meters per second", index: 3),
+        Flashcard(question: "What is the largest organ in the human body?", answer: "Skin", index: 4),
+        Flashcard(question: "What is the process of plants making food called?", answer: "Photosynthesis", index: 5)
     ]))
 }

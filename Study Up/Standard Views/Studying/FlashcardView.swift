@@ -163,9 +163,9 @@ struct FlashcardView: View {
 
 #Preview {
     FlashcardView(flashcardSet: FlashcardSet(title: "Science", flashcards: [
-        Flashcard(question: "What is H2O?", answer: "Water"),
-        Flashcard(question: "What is the closest planet to the Sun?", answer: "Mercury"),
-        Flashcard(question: "What is the hardest natural substance?", answer: "Diamond")
+        Flashcard(question: "What is H2O?", answer: "Water", index: 1),
+        Flashcard(question: "What is the closest planet to the Sun?", answer: "Mercury", index: 2),
+        Flashcard(question: "What is the hardest natural substance?", answer: "Diamond", index: 3)
         ])
     )
 }

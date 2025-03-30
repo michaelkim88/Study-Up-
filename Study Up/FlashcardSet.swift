@@ -13,13 +13,15 @@ class Flashcard {
     var question: String
     var answer: String
     var creationDate: Date
-
+    var index: Int
+    
     var id: PersistentIdentifier { persistentModelID } // Unique identifier
 
-    init(question: String, answer: String) {
+    init(question: String, answer: String, index: Int) {
         self.question = question
         self.answer = answer
         self.creationDate = Date()  // Set creation time
+        self.index = index
     }
 }
 
@@ -28,7 +30,7 @@ class FlashcardSet {
     var title: String
     var flashcards: [Flashcard]
     var creationDate: Date
-    var totalCards: Int = 0
+    var totalCards: Int
 
     var id: PersistentIdentifier { persistentModelID } // Unique identifier
 
@@ -36,6 +38,7 @@ class FlashcardSet {
         self.title = title
         self.flashcards = flashcards
         self.creationDate = Date()  // Set creation time
+        self.totalCards = flashcards.count
     }
 }
 
