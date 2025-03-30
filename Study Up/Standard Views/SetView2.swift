@@ -401,6 +401,9 @@ func normalizeFlashcardIndices(flashcards: [Flashcard]) -> [Flashcard] {
 struct CustomTextField: View {
     @Binding var text: String
     
+    @State private var offset: CGFloat = 0
+    @FocusState private var isFocused: Bool
+    
     var body: some View {
         TextEditor(text: $text)
             .font(.system(size: 20))
@@ -410,6 +413,33 @@ struct CustomTextField: View {
             .padding([.leading, .trailing], 5)
             .frame(minHeight: 40, maxHeight: .infinity)
             .fixedSize(horizontal: false, vertical: true)
+            .gesture(
+                DragGesture()
+                    .onChanged { value in
+                        // Only track downward movement
+                        if value.translation.height > 0 {
+                            self.offset = value.translation.height
+                        }
+                    }
+                    .onEnded { value in
+                        // If the user swiped down with enough force, dismiss the keyboard
+                        if value.translation.height > 20 && value.predictedEndTranslation.height > 40 {
+                            hideKeyboard()
+                        }
+                        self.offset = 0
+                    }
+            )
+    }
+    
+    // Helper function to dismiss the keyboard
+    private func hideKeyboard() {
+        isFocused = false
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+}
+extension UIApplication {
+    func endEditing() {
+        sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
 
