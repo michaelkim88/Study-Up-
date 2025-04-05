@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-struct SetView2: View {
+struct SetView: View {
     @Bindable var flashcardSet: FlashcardSet
     @State private var isMenuExpanded = false
     @Environment(\.dismiss) private var dismiss
@@ -34,9 +34,7 @@ struct SetView2: View {
             }
         }
     }
-    
-    // MARK: - Main View Components
-    
+        
     private var mainContentView: some View {
         VStack(spacing: 0) {
             titleBarView
