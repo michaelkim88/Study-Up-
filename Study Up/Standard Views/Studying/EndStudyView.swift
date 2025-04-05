@@ -83,8 +83,8 @@ struct EndStudyView: View {
 
 #Preview {
     EndStudyView(flashcardSet: FlashcardSet(title: "Science", flashcards: [
-        Flashcard(question: "What is H2O?", answer: "Water", index: 1),
-        Flashcard(question: "What is the closest planet to the Sun?", answer: "Mercury", index: 2)
+        Flashcard(question: "What is H2O?", answer: "Water"),
+        Flashcard(question: "What is the closest planet to the Sun?", answer: "Mercury")
     ]))
 }
 
