@@ -25,8 +25,8 @@ struct HomeView: View {
     }
     
     // Make flashcardSets mutable with @State, initialized with sample data
-    @Query private var flashcardSets: [FlashcardSet]
-    
+    @Query(sort: \FlashcardSet.creationDate, order: .reverse) private var flashcardSets: [FlashcardSet] // Fetch sets
+
     // Filtered flashcard sets based on search text
     private var filteredFlashcardSets: [FlashcardSet] {
         if searchText.isEmpty {
@@ -71,7 +71,7 @@ struct HomeView: View {
                             }
                             LazyVGrid(columns: columns, spacing: 20) {
                                 ForEach(filteredFlashcardSets) { set in
-                                    NavigationLink(destination: SetView2(flashcardSet: set)) {
+                                    NavigationLink(destination: SetView(flashcardSet: set)) {
                                         FlashcardSetGridItem(set: set, colors: colors)
                                     }
                                 }
@@ -182,7 +182,7 @@ struct HomeView: View {
             )
             .background(colors.backgroundColor)
             .navigationDestination(item: $newSet) { set in
-                SetView2(flashcardSet: set)
+                SetView(flashcardSet: set)
             }
         }
     }

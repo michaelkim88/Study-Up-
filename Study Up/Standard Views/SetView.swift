@@ -94,20 +94,10 @@ struct SetView: View {
         ForEach(sortedIndices, id: \.self) { originalIndex in
             flashcardView(for: originalIndex)
         }
-        .onMove(perform: moveFlashcard)
-    }
-    
-    private var sortedIndices: [Int] {
-        
-        flashcardSet.flashcards.indices.sorted { idx1, idx2 in
-            let index1 = flashcardSet.flashcards[idx1].index ?? 0
-            let index2 = flashcardSet.flashcards[idx2].index ?? 0
-            return index1 < index2
-        }
     }
     
     private func flashcardView(for originalIndex: Int) -> some View {
-        let flashcard = $flashcardSet.flashcards[originalIndex]
+        let flashcard = $flashcardSet.head
         
         return VStack(alignment: .leading, spacing: 0) {
             questionSectionView(for: flashcard)
@@ -343,24 +333,17 @@ struct SetView: View {
         }
         .offset(x: ((UIScreen.main.bounds.width * 0.6) / 2 + 35))
     }
-    
-    // MARK: - Helper Methods
-    
+        
     private func addNewCard(atBeginning: Bool) {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
             let newCard = Flashcard(question: "New Question", answer: "New Answer")
             
             if atBeginning {
-                flashcardSet.insert(flashcard: newCard, modelContext: modelContext)
+                flashcardSet.insert(flashcard: newCard)
             } else {
-                flashcardSet.append(flashcard: newCard, modelContext: modelContext)
+                flashcardSet.append(flashcard: newCard)
             }
         }
-    }
-    
-    func moveFlashcard(from source: IndexSet, to destination: Int) {
-        flashcardSet.flashcards.move(fromOffsets: source, toOffset: destination)
-        try? modelContext.save()
     }
     
     func triggerTextFieldUpdates() {
@@ -427,12 +410,5 @@ extension UIApplication {
 }
 
 #Preview {
-    SetView2(flashcardSet: FlashcardSet(title: "Science", flashcards: [
-        Flashcard(question: "What is H2O?", answer: "Water"),
-        Flashcard(question: "What is the closest planet to the Sun?", answer: "Mercury"),
-        Flashcard(question: "What is the hardest natural substance?", answer: "Diamond"),
-        Flashcard(question: "What is the speed of light?", answer: "299,792,458 meters per second"),
-        Flashcard(question: "What is the largest organ in the human body?", answer: "Skin"),
-        Flashcard(question: "What is the process of plants making food called?", answer: "Photosynthesis")
-    ]))
+    SetView(flashcardSet: ScienceSampleSet())
 }
