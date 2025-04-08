@@ -15,6 +15,7 @@ struct HomeView: View {
     @State private var searchText = ""
     @State private var isSearchExpanded = false
     @State private var newSet: FlashcardSet? = nil
+    @State private var selectionMode: Bool = false
     @FocusState private var isSearchFocused: Bool
     
     @Environment(\.modelContext) private var modelContext
@@ -48,17 +49,6 @@ struct HomeView: View {
             ZStack(alignment: .bottom) {
                 // Main content
                 VStack(spacing: 0) {
-                    HStack {
-                        Button(action: {
-                            
-                        }) {
-                            Image(systemName: "checkmark.circle")
-                                .padding([.top, .horizontal], 10)
-                        }
-                        
-                        Spacer()
-                    }
-                    
                     GeometryReader { geometry in
                         ScrollView {
                             if (filteredFlashcardSets.isEmpty) {
@@ -71,9 +61,7 @@ struct HomeView: View {
                             }
                             LazyVGrid(columns: columns, spacing: 20) {
                                 ForEach(filteredFlashcardSets) { set in
-                                    NavigationLink(destination: SetView2(flashcardSet: set)) {
-                                        FlashcardSetGridItem(set: set, colors: colors)
-                                    }
+                                    SelectableGridItem(flashcardSet: set, selectionMode: $selectionMode, colors: colors)
                                 }
                             }
                             .padding(.horizontal, 10)
@@ -182,9 +170,59 @@ struct HomeView: View {
             )
             .background(colors.backgroundColor)
             .navigationDestination(item: $newSet) { set in
-                SetView2(flashcardSet: set)
+                SetView(flashcardSet: set)
             }
         }
+    }
+}
+
+// Set Grid item that serves as a navigation link and
+// selection mode toggle. Used to display the flashcard sets.
+struct SelectableGridItem: View {
+    let flashcardSet: FlashcardSet
+    @Binding var selectionMode: Bool
+    @State private var isSelected: Bool = false
+    let colors: AppColorScheme
+    
+    var body: some View {
+        ZStack {
+            NavigationLink(value: flashcardSet) {
+                FlashcardSetGridItem(set: flashcardSet, colors: colors)
+            }
+            // No navigation while in selection mode
+            .disabled(selectionMode)
+            
+            .simultaneousGesture(
+                LongPressGesture(minimumDuration: 0.5)
+                    .onEnded { _ in
+                        if !selectionMode {
+                            withAnimation {
+                                selectionMode = true
+                                isSelected = true
+                            }
+                        }
+                    }
+            )
+            
+            // Invisible overlay to capture taps in selection mode
+            if selectionMode {
+                Color.clear
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        withAnimation {
+                            isSelected.toggle()
+                        }
+                    }
+                    .overlay(
+                        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                            .foregroundColor(.blue)
+                            .padding(8)
+                            .clipShape(Circle())
+                            .offset(x: 70, y: -40)
+                    )
+            }
+        }
+        .contentShape(Rectangle())
     }
 }
 

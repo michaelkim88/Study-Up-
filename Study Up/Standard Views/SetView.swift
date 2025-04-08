@@ -427,7 +427,7 @@ extension UIApplication {
 }
 
 #Preview {
-    SetView2(flashcardSet: FlashcardSet(title: "Science", flashcards: [
+    SetView(flashcardSet: FlashcardSet(title: "Science", flashcards: [
         Flashcard(question: "What is H2O?", answer: "Water"),
         Flashcard(question: "What is the closest planet to the Sun?", answer: "Mercury"),
         Flashcard(question: "What is the hardest natural substance?", answer: "Diamond"),
