@@ -222,7 +222,7 @@ struct HorizontalFlashcardView: View {
     }
     
     private func moveToNextCard() {
-        if currentIndex < flashcardSet.count {
+        if currentIndex < flashcardSet.flashcards.count {
             currentIndex += 1
         }
     }
