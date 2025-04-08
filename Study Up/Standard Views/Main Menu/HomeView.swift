@@ -130,7 +130,7 @@ struct HomeView: View {
                         isExpanded: $isExpanded,
                         colors: colors,
                         onNewSet: {
-                            let set = FlashcardSet(title: "Untitled Set", flashcards: [])
+                            let set = FlashcardSet(title: "Untitled Set")
                             newSet = set
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
@@ -189,14 +189,4 @@ struct HomeView: View {
 }
 
 #Preview {
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: FlashcardSet.self, configurations: config)
-    
-    // Populate with sample flashcard sets
-    for sampleSet in SampleFlashcardData.sampleSets {
-        container.mainContext.insert(sampleSet)
-    }
-    
-    return HomeView()
-        .modelContainer(container)
 }

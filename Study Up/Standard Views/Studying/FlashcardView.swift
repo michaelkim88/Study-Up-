@@ -24,7 +24,7 @@ struct FlashcardView: View {
         
         // Flashcard
         GeometryReader { geometry in
-            if currentIndex != flashcardSet.flashcards.count {
+            if currentIndex != flashcardSet.count {
                 VStack {
                     // Back button and stats in the same HStack
                     ZStack{
@@ -54,78 +54,78 @@ struct FlashcardView: View {
                         }
                     }
                     
-                    
-                    let card = flashcardSet.flashcards[currentIndex]
-                    ZStack {
-                        // Question side
-                        Text(card.question)
-                            .font(.title2)
-                            .multilineTextAlignment(.center)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .frame(height: geometry.size.height)
-                            .background(Color(.systemBackground))
-                            .cornerRadius(10)
-                            .shadow(radius: 3)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.blue, lineWidth: 2)
-                            )
-                            .opacity(flippedCards.contains(currentIndex) ? 0 : 1)
-                            .rotation3DEffect(
-                                .degrees(flippedCards.contains(currentIndex) ? 180 : 0),
-                                axis: (x: 0, y: 1, z: 0)
-                            )
-                        
-                        // Answer side
-                        Text(card.answer)
-                            .font(.title2)
-                            .multilineTextAlignment(.center)
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .frame(height: geometry.size.height)
-                            .background(Color(.systemBackground))
-                            .cornerRadius(10)
-                            .shadow(radius: 3)
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .stroke(Color.green, lineWidth: 2)
-                            )
-                            .opacity(flippedCards.contains(currentIndex) ? 1 : 0)
-                            .rotation3DEffect(
-                                .degrees(flippedCards.contains(currentIndex) ? 0 : -180),
-                                axis: (x: 0, y: 1, z: 0)
-                            )
-                    }
-                    .offset(offset)
-                    .rotationEffect(.degrees(Double(offset.width / 15)))
-                    .gesture(
-                        DragGesture(minimumDistance: 10)
-                            .onChanged { gesture in
-                                offset = gesture.translation
-                            }
-                            .onEnded { gesture in
-                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                                    handleSwipe(gesture.translation)
-                                }
-                            }
-                    )
-                    .simultaneousGesture(
-                        TapGesture()
-                            .onEnded {
-                                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                                    if flippedCards.contains(currentIndex) {
-                                        flippedCards.remove(currentIndex)
-                                    } else {
-                                        flippedCards.insert(currentIndex)
-                                    }
-                                }
-                            }
-                    )
-                    .onLongPressGesture {
-                        editingCard = (currentIndex, !flippedCards.contains(currentIndex))
-                        editText = flippedCards.contains(currentIndex) ? card.answer : card.question
-                    }
+// THIS NEEDS TO BE CHANGED
+//                    let card = flashcardSet.head
+//                    ZStack {
+//                        // Question side
+//                        Text(card?.question?)
+//                            .font(.title2)
+//                            .multilineTextAlignment(.center)
+//                            .padding()
+//                            .frame(maxWidth: .infinity)
+//                            .frame(height: geometry.size.height)
+//                            .background(Color(.systemBackground))
+//                            .cornerRadius(10)
+//                            .shadow(radius: 3)
+//                            .overlay(
+//                                RoundedRectangle(cornerRadius: 10)
+//                                    .stroke(Color.blue, lineWidth: 2)
+//                            )
+//                            .opacity(flippedCards.contains(currentIndex) ? 0 : 1)
+//                            .rotation3DEffect(
+//                                .degrees(flippedCards.contains(currentIndex) ? 180 : 0),
+//                                axis: (x: 0, y: 1, z: 0)
+//                            )
+//                        
+//                        // Answer side
+//                        Text(card.answer)
+//                            .font(.title2)
+//                            .multilineTextAlignment(.center)
+//                            .padding()
+//                            .frame(maxWidth: .infinity)
+//                            .frame(height: geometry.size.height)
+//                            .background(Color(.systemBackground))
+//                            .cornerRadius(10)
+//                            .shadow(radius: 3)
+//                            .overlay(
+//                                RoundedRectangle(cornerRadius: 10)
+//                                    .stroke(Color.green, lineWidth: 2)
+//                            )
+//                            .opacity(flippedCards.contains(currentIndex) ? 1 : 0)
+//                            .rotation3DEffect(
+//                                .degrees(flippedCards.contains(currentIndex) ? 0 : -180),
+//                                axis: (x: 0, y: 1, z: 0)
+//                            )
+//                    }
+//                    .offset(offset)
+//                    .rotationEffect(.degrees(Double(offset.width / 15)))
+//                    .gesture(
+//                        DragGesture(minimumDistance: 10)
+//                            .onChanged { gesture in
+//                                offset = gesture.translation
+//                            }
+//                            .onEnded { gesture in
+//                                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+//                                    handleSwipe(gesture.translation)
+//                                }
+//                            }
+//                    )
+//                    .simultaneousGesture(
+//                        TapGesture()
+//                            .onEnded {
+//                                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+//                                    if flippedCards.contains(currentIndex) {
+//                                        flippedCards.remove(currentIndex)
+//                                    } else {
+//                                        flippedCards.insert(currentIndex)
+//                                    }
+//                                }
+//                            }
+//                    )
+//                    .onLongPressGesture {
+//                        editingCard = (currentIndex, !flippedCards.contains(currentIndex))
+//                        editText = flippedCards.contains(currentIndex) ? card?.answer : card?.question
+//                    }
                 }
                 .navigationBarBackButtonHidden(true)
             } else {
@@ -154,7 +154,7 @@ struct FlashcardView: View {
     }
     
     private func moveToNextCard() {
-        if currentIndex < flashcardSet.flashcards.count {
+        if currentIndex < flashcardSet.count {
             currentIndex += 1
             rotation = 0
         }
@@ -162,10 +162,5 @@ struct FlashcardView: View {
 }
 
 #Preview {
-    FlashcardView(flashcardSet: FlashcardSet(title: "Science", flashcards: [
-        Flashcard(question: "What is H2O?", answer: "Water"),
-        Flashcard(question: "What is the closest planet to the Sun?", answer: "Mercury"),
-        Flashcard(question: "What is the hardest natural substance?", answer: "Diamond")
-        ])
-    )
+    
 }

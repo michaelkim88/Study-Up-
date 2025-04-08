@@ -13,7 +13,7 @@ class Flashcard {
     var question: String
     var answer: String
     var creationDate: Date
-    var next: Flashcard?
+    @Relationship(deleteRule: .nullify) var next: Flashcard?
     var id: PersistentIdentifier { persistentModelID } // Unique identifier
 
     init(question: String, answer: String) {
@@ -28,7 +28,7 @@ class Flashcard {
 class FlashcardSet {
     var title: String
     var creationDate: Date
-    var head: Flashcard?
+    @Relationship(deleteRule: .cascade) var head: Flashcard?
     var id: PersistentIdentifier { persistentModelID } // Unique identifier
     var count: Int = 0
 
@@ -68,29 +68,40 @@ class FlashcardSet {
     func remove(flashcard: Flashcard, modelContext: ModelContext) {
         var current = head
         var prev: Flashcard? = nil
-        var found = false
         
-        while (current != nil && found == false) {
+        while current != nil {
             if current?.id == flashcard.id {
-                found = true
-                
                 // If current is the head node
-                if let prevNode = prev {
-                    prevNode.next = current?.next // Skip the current node
+                if prev == nil {
+                    head = current?.next // Update head
                 } else {
-                    head = current?.next // If it's the head, update head
+                    prev?.next = current?.next // Skip the current node
                 }
                 
                 // Remove from the model context
-                if let currentCard = current {
-                    modelContext.delete(currentCard)
-                }
+                modelContext.delete(flashcard)
+                count -= 1
+                return
             }
             prev = current
             current = current?.next
         }
-        
-        // reduce the count by 1
-        count -= 1
+    }
+}
+// Extension to make FlashcardSet iterable
+extension FlashcardSet: Sequence {
+    func makeIterator() -> FlashcardIterator {
+        return FlashcardIterator(current: head)
+    }
+}
+
+// Iterator for FlashcardSet
+struct FlashcardIterator: IteratorProtocol {
+    var current: Flashcard?
+    
+    mutating func next() -> Flashcard? {
+        guard let node = current else { return nil }
+        current = node.next
+        return node
     }
 }
