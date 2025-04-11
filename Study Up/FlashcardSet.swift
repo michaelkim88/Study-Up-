@@ -94,6 +94,16 @@ class FlashcardSet {
 
         self.save(context: context) // Call the save helper
     }
+    
+    func reindex() {
+        // just remake the indexes to smaller normal values
+        var x = 1
+        
+        for card in flashcards {
+            card.index = x
+            x += 1
+        }
+    }
 
 
     // Helper function for saving the context (keep as is)

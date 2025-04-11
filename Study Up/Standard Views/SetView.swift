@@ -71,6 +71,7 @@ struct SetView: View {
     
     private var backButton: some View {
         Button(action: {
+            flashcardSet.reindex()
             try? modelContext.save()
             dismiss()
         }) {
@@ -96,7 +97,16 @@ struct SetView: View {
         ForEach(sortedIndices, id: \.self) { originalIndex in
             flashcardView(for: originalIndex)
         }
-        .onMove(perform: moveFlashcard)
+        .onMove{indexSet, destination in
+            // move the flaschards around by dragging
+            flashcardSet.flashcards.move(fromOffsets: indexSet, toOffset: destination)
+            var counter = 1
+            
+            for flashcard in flashcardSet.flashcards {
+                flashcard.index = counter
+                counter += 1
+            }
+        }
     }
     
     private var sortedIndices: [Int] {
@@ -345,9 +355,7 @@ struct SetView: View {
         }
         .offset(x: ((UIScreen.main.bounds.width * 0.6) / 2 + 35))
     }
-    
-    // MARK: - Helper Methods
-    
+        
     private func addNewCard(atBeginning: Bool) {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
             let newCard = Flashcard(question: "New Question", answer: "New Answer")
@@ -358,11 +366,6 @@ struct SetView: View {
                 flashcardSet.append(flashcard: newCard, modelContext: modelContext)
             }
         }
-    }
-    
-    func moveFlashcard(from source: IndexSet, to destination: Int) {
-        flashcardSet.flashcards.move(fromOffsets: source, toOffset: destination)
-        try? modelContext.save()
     }
     
     func triggerTextFieldUpdates() {
