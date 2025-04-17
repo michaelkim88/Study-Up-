@@ -74,16 +74,29 @@ struct HomeView: View {
                     .allowsHitTesting(!isSearchExpanded && !isExpanded)
                 }
                 
-                // Top cutoff overlay
-                VStack {
-                    Rectangle()
-                        .fill(colors.cutoffColor)
-                        .frame(height: 60)
-                        .allowsHitTesting(!isSearchExpanded && !isExpanded)
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity)
-                .ignoresSafeArea(.all, edges: .top)
+//                // Top cutoff overlay
+//                VStack(spacing: 0) {
+//                    Rectangle()
+//                        .fill(colors.cutoffColor)
+//                        .frame(height: 60)
+//                        .overlay(alignment: .leading) {
+//                            if selectionMode {
+//                                Text("Done")
+//                                    .font(.headline)
+//                                    .foregroundColor(.blue)
+//                                    .padding(.leading, 16)
+//                                    .padding(.top, 16)
+//                                    .contentShape(Rectangle())    // make tap area full text bounds
+//                                    .onTapGesture {
+//                                        withAnimation { selectionMode = false }
+//                                    }
+//                            }
+//                        }
+//                        .allowsHitTesting(true)  // ensure taps go through
+//                    Spacer()
+//                }
+//                .ignoresSafeArea(edges: .top)
+
                 
                 // Bottom cutoff overlay
                 VStack(alignment: .center, spacing: 0) {
@@ -150,6 +163,7 @@ struct HomeView: View {
                 .padding(.leading, 20)
                 .padding(.trailing, 20)
             }
+            
             .contentShape(Rectangle())
             .onTapGesture {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
@@ -169,8 +183,28 @@ struct HomeView: View {
                     }
             )
             .background(colors.backgroundColor)
+            
+            // Navigation destination to automatically navigate to new set
             .navigationDestination(item: $newSet) { set in
                 SetView(flashcardSet: set)
+            }
+            .navigationDestination(for: FlashcardSet.self) { set in
+                SetView(flashcardSet: set)
+            }
+            
+            // Button to exit selection mode
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(.visible, for: .navigationBar)                 // make the bar’s background layer visible
+            .toolbarBackground(colors.cutoffColor, for: .navigationBar)
+            .toolbar {
+              ToolbarItem(placement: .navigationBarLeading) {
+                Button("Done") {
+                  withAnimation { selectionMode = false }
+                }
+                .disabled(!selectionMode)                  // non‑clickable when not in mode
+                .opacity(selectionMode ? 1 : 0)            // invisible when not in mode
+              }
             }
         }
     }
@@ -189,6 +223,7 @@ struct SelectableGridItem: View {
             NavigationLink(value: flashcardSet) {
                 FlashcardSetGridItem(set: flashcardSet, colors: colors)
             }
+            
             // No navigation while in selection mode
             .disabled(selectionMode)
             

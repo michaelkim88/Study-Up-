@@ -15,7 +15,6 @@ struct SetView: View {
     }
 
     var body: some View {
-        NavigationStack {
             ZStack(alignment: .bottom) {
                 mainContentView
                 bottomMenuView
@@ -32,7 +31,6 @@ struct SetView: View {
             .onAppear {
                 triggerTextFieldUpdates()
             }
-        }
     }
         
     private var mainContentView: some View {
