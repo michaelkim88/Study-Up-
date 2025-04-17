@@ -10,7 +10,6 @@ struct SampleFlashcardData {
             Flashcard(question: "What is 15% of 200?", answer: "30"),
             Flashcard(question: "What is the formula for the area of a circle?", answer: "πr²")
         ]),
-        
         FlashcardSet(title: "History", flashcards: [
             Flashcard(question: "Who discovered America?", answer: "Columbus"),
             Flashcard(question: "In what year did World War II end?", answer: "1945"),
@@ -19,7 +18,6 @@ struct SampleFlashcardData {
             Flashcard(question: "Which empire built the Pyramids?", answer: "Ancient Egyptian Empire"),
             Flashcard(question: "When did the Berlin Wall fall?", answer: "1989")
         ]),
-        
         FlashcardSet(title: "Science", flashcards: [
             Flashcard(question: "What is H2O?", answer: "Water"),
             Flashcard(question: "What is the closest planet to the Sun?", answer: "Mercury"),
@@ -38,4 +36,4 @@ struct SampleFlashcardData {
             Flashcard(question: "Ciao means?", answer: "Hello/Goodbye")
         ])
     ]
-} 
+}
