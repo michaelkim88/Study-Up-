@@ -61,13 +61,7 @@ struct HomeView: View {
                             }
                             LazyVGrid(columns: columns, spacing: 20) {
                                 ForEach(filteredFlashcardSets) { set in
-<<<<<<< HEAD
                                     SelectableGridItem(flashcardSet: set, selectionMode: $selectionMode, colors: colors)
-=======
-                                    NavigationLink(destination: SetView(flashcardSet: set)) {
-                                        FlashcardSetGridItem(set: set, colors: colors)
-                                    }
->>>>>>> 7ff545cb209043e8a3bd704a66bbecee63b595c8
                                 }
                             }
                             .padding(.horizontal, 10)
@@ -193,7 +187,6 @@ struct HomeView: View {
             // Navigation destination to automatically navigate to new set
             .navigationDestination(item: $newSet) { set in
                 SetView(flashcardSet: set)
-<<<<<<< HEAD
             }
             .navigationDestination(for: FlashcardSet.self) { set in
                 SetView(flashcardSet: set)
@@ -212,8 +205,6 @@ struct HomeView: View {
                 .disabled(!selectionMode)                  // non‑clickable when not in mode
                 .opacity(selectionMode ? 1 : 0)            // invisible when not in mode
               }
-=======
->>>>>>> 7ff545cb209043e8a3bd704a66bbecee63b595c8
             }
         }
     }
