@@ -15,17 +15,18 @@ class Flashcard {
     var creationDate: Date
     // Ensure index is consistently managed
     @Attribute(.preserveValueOnDeletion) // Consider if you want index gaps or re-indexing on delete
-    var index: Int?
+    var index: Int
 
     // Relationship back to the set
     var set: FlashcardSet?
 
     // No need for explicit id property when using @Model
 
-    init(question: String, answer: String) {
+    init(question: String, answer: String, index: Int) {
         self.question = question
         self.answer = answer
         self.creationDate = Date()
+        self.index = index
         // Index should be set by the FlashcardSet methods
     }
 }
@@ -61,7 +62,7 @@ class FlashcardSet {
     func insert(flashcard: Flashcard, modelContext: ModelContext?) {
         // Increment the index of all existing flashcards
         for card in flashcards {
-            card.index = (card.index ?? 0) + 1
+            card.index = (card.index) + 1
         }
 
         // Set up the new flashcard

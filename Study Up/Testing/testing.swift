@@ -1,95 +1,53 @@
-////
-////  testing.swift
-////  Study Up
-////
-////  Created by Michael Kim on 3/7/25.
-////
-//
-//import SwiftUI
-//
-//@Model
-//class StudyItem {
-//    var text: String
-//    
-//    init(text: String = "Tap and hold to edit...") {
-//        self.text = text
-//    }
-//}
-//
-//struct Testing: View {
-//    @Environment(\.modelContext) private var modelContext
-//    @Query private var studyItems: [StudyItem]
-//    @State private var isExpanded: Bool = false
-//    @State private var currentIndex = 0
-//    
-//    var currentText: Binding<String> {
-//        Binding(
-//            get: { studyItems.first?.text ?? "Tap and hold to edit..." },
-//            set: { newValue in
-//                if let item = studyItems.first {
-//                    item.text = newValue
-//                } else {
-//                    let newItem = StudyItem(text: newValue)
-//                    modelContext.insert(newItem)
-//                }
-//            }
-//        )
-//    }
-//    
-//    var body: some View {
-//        VStack {
-//            
-//            Text("Study Set")
-//                .font(.largeTitle)
-//                .fontWeight(.heavy)
-//                .multilineTextAlignment(.center)
-//                .frame(maxWidth: .infinity, alignment: .center)
-//            Spacer()
-//            
-//            if isExpanded {
-//                VStack {
-//                    TextEditor(text: currentText)
-//                        .frame(height: 150)
-//                        .background(Color.gray.opacity(0.2))
-//                        .cornerRadius(8)
-//                        .padding()
-//                    
-//                    Button("Back") {
-//                        withAnimation {
-//                            isExpanded = false
-//                        }
-//                    }
-//                    .padding()
-//                }
-//                .transition(.opacity)
-//            } else {
-//                Text(currentText.wrappedValue)
-//                    .frame(maxWidth: .infinity, minHeight: 50)
-//                    .background(Color.gray.opacity(0.2))
-//                    .cornerRadius(8)
-//                    .onLongPressGesture {
-//                        withAnimation (.easeInOut(duration: 0.5)){
-//                            isExpanded = true
-//                        }
-//                    }
-//                    .transition(.opacity)
-//            }
-//            Spacer()
-//        }
-//        .padding()
-//        .onAppear {
-//            if studyItems.isEmpty {
-//                let initialItem = StudyItem()
-//                modelContext.insert(initialItem)
-//            }
-//        }
-//    }
-//}
-//
-//struct ExpandableTextBox_Previews: PreviewProvider {
-//    static var previews: some View {
-//        Testing()
-//    }
-//}
-//
-//
+import SwiftUI
+
+struct ContentView: View {
+    
+    @State private var episodes: [Episode] = MockData.episodes
+    
+    var body: some View {
+        NavigationStack {
+            List ($episodes, editActions: .move) { episode in
+                HStack(alignment: .top, spacing: 12) {
+                    RoundedRectangle(cornerRadius: 12)
+                        .frame(width: 80, height: 80)
+                        .foregroundStyle(episode.color.wrappedValue)
+                    VStack(alignment: .leading) {
+                        Text ("Episode Title")
+                            .font(.headline)
+                        Text ("Here is the short description for the latest episode.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .navigationTitle("Episodes")
+        }
+    }
+}
+
+#Preview { NavigationStack { ContentView() } }
+
+class Episode: Identifiable {
+    let id = UUID()
+    var title: String
+    var color: Color
+    var listOrder: Int
+    
+    init(title: String, color: Color, listOrder: Int) {
+        self.title = title
+        self.color = color
+        self.listOrder = listOrder
+    }
+}
+
+struct MockData {
+    static var episodes: [Episode] {
+        [
+            Episode(title: "Pink Episode", color: .pink, listOrder: 0),
+            Episode (title: "Teal Episode", color: .teal, listOrder: 1),
+            Episode(title: "Indigo Episode", color: .indigo, listOrder: 2),
+            Episode(title: "Orange Episode", color: .orange, listOrder: 3),
+            Episode(title: "Green Episode", color: .green, listOrder: 4),
+            Episode(title: "Purple Episode", color: .purple, listOrder: 5),
+            Episode(title: "Yellow Episode", color: .yellow, listOrder: 6)]}
+}

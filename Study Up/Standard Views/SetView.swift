@@ -15,22 +15,22 @@ struct SetView: View {
     }
 
     var body: some View {
-            ZStack(alignment: .bottom) {
-                mainContentView
-                bottomMenuView
-                
-                // Helper view for triggering updates
-                if textFieldUpdateTrigger {
-                    Color.clear.frame(width: 0, height: 0)
-                } else {
-                    Color.clear.frame(width: 0, height: 0)
-                }
+        ZStack(alignment: .bottom) {
+            mainContentView
+            bottomMenuView
+            
+            // Helper view for triggering updates
+            if textFieldUpdateTrigger {
+                Color.clear.frame(width: 0, height: 0)
+            } else {
+                Color.clear.frame(width: 0, height: 0)
             }
-            .background(colors.backgroundColor)
-            .navigationBarBackButtonHidden(true)
-            .onAppear {
-                triggerTextFieldUpdates()
-            }
+        }
+        .background(colors.backgroundColor)
+        .navigationBarBackButtonHidden(true)
+        .onAppear {
+            triggerTextFieldUpdates()
+        }
     }
     
     // MARK: - Main View Components
@@ -81,43 +81,35 @@ struct SetView: View {
     }
     
     private var cardListView: some View {
-        List {
-            addNewCardButton(atTop: true)
-            flashcardsListView
-            addNewCardButton(atBottom: true)
+        
+        List ($flashcardSet.flashcards, editActions: .move) { flashcard in
+            let allIndices = flashcardSet.flashcards.compactMap(\.index)
+            let minIndex   = allIndices.min()
+            let maxIndex   = allIndices.max()
+            
+            if flashcard.index.wrappedValue == minIndex {
+                addNewCardButton(atTop: true)
+            }
+            flashcardView(flashcard: flashcard)
+            if flashcard.index.wrappedValue == maxIndex {
+                addNewCardButton(atTop: false)
+            }
         }
         .listStyle(PlainListStyle())
         .environment(\.defaultMinListRowHeight, 0)
         .scrollContentBackground(.hidden)
     }
     
-    private var flashcardsListView: some View {
-        ForEach(sortedIndices, id: \.self) { originalIndex in
-            flashcardView(for: originalIndex)
-        }
-        .onMove{indexSet, destination in
-            // move the flaschards around by dragging
-            flashcardSet.flashcards.move(fromOffsets: indexSet, toOffset: destination)
-            var counter = 1
-            
-            for flashcard in flashcardSet.flashcards {
-                flashcard.index = counter
-                counter += 1
-            }
-        }
-    }
-    
     private var sortedIndices: [Int] {
         
         flashcardSet.flashcards.indices.sorted { idx1, idx2 in
-            let index1 = flashcardSet.flashcards[idx1].index ?? 0
-            let index2 = flashcardSet.flashcards[idx2].index ?? 0
+            let index1 = flashcardSet.flashcards[idx1].index
+            let index2 = flashcardSet.flashcards[idx2].index
             return index1 < index2
         }
     }
     
-    private func flashcardView(for originalIndex: Int) -> some View {
-        let flashcard = $flashcardSet.flashcards[originalIndex]
+    private func flashcardView(flashcard: Binding<Flashcard>) -> some View {
         
         return VStack(alignment: .leading, spacing: 0) {
             questionSectionView(for: flashcard)
@@ -356,7 +348,7 @@ struct SetView: View {
         
     private func addNewCard(atBeginning: Bool) {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-            let newCard = Flashcard(question: "New Question", answer: "New Answer")
+            let newCard = Flashcard(question: "New Question", answer: "New Answer", index: 0)
             
             if atBeginning {
                 flashcardSet.insert(flashcard: newCard, modelContext: modelContext)
@@ -431,11 +423,11 @@ extension UIApplication {
 
 #Preview {
     SetView(flashcardSet: FlashcardSet(title: "Science", flashcards: [
-        Flashcard(question: "What is H2O?", answer: "Water"),
-        Flashcard(question: "What is the closest planet to the Sun?", answer: "Mercury"),
-        Flashcard(question: "What is the hardest natural substance?", answer: "Diamond"),
-        Flashcard(question: "What is the speed of light?", answer: "299,792,458 meters per second"),
-        Flashcard(question: "What is the largest organ in the human body?", answer: "Skin"),
-        Flashcard(question: "What is the process of plants making food called?", answer: "Photosynthesis")
+        Flashcard(question: "What is H2O?", answer: "Water", index: 1),
+        Flashcard(question: "What is the closest planet to the Sun?", answer: "Mercury", index: 2),
+        Flashcard(question: "What is the hardest natural substance?", answer: "Diamond", index: 3),
+        Flashcard(question: "What is the speed of light?", answer: "299,792,458 meters per second", index: 4),
+        Flashcard(question: "What is the largest organ in the human body?", answer: "Skin", index: 5),
+        Flashcard(question: "What is the process of plants making food called?", answer: "Photosynthesis", index: 6)
     ]))
 }

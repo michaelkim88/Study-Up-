@@ -12,7 +12,7 @@ import SwiftData
 struct StudyUpApp: App {
     var body: some Scene {
         WindowGroup {
-            HomeView()
+            ContentView()
         }
         .modelContainer(for: [FlashcardSet.self, Flashcard.self])
     }
