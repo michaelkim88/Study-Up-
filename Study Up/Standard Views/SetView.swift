@@ -82,22 +82,32 @@ struct SetView: View {
     
     private var cardListView: some View {
         
-        List ($flashcardSet.flashcards, editActions: .move) { flashcard in
-            let allIndices = flashcardSet.flashcards.compactMap(\.index)
-            let minIndex   = allIndices.min()
-            let maxIndex   = allIndices.max()
+        ZStack {
+
             
-            if flashcard.index.wrappedValue == minIndex {
+            List ($flashcardSet.flashcards, editActions: .move) { flashcard in
+                let allIndices = flashcardSet.flashcards.compactMap(\.index)
+                let minIndex   = allIndices.min()
+                let maxIndex   = allIndices.max()
+                
+                if flashcard.index.wrappedValue == minIndex {
+                    addNewCardButton(atTop: true)
+                }
+                
+                flashcardView(flashcard: flashcard)
+                
+                if flashcard.index.wrappedValue == maxIndex {
+                    addNewCardButton(atTop: false)
+                }
+            }
+            .listStyle(PlainListStyle())
+            .environment(\.defaultMinListRowHeight, 0)
+            .scrollContentBackground(.hidden)
+            
+            if (flashcardSet.flashcards.isEmpty) {
                 addNewCardButton(atTop: true)
             }
-            flashcardView(flashcard: flashcard)
-            if flashcard.index.wrappedValue == maxIndex {
-                addNewCardButton(atTop: false)
-            }
         }
-        .listStyle(PlainListStyle())
-        .environment(\.defaultMinListRowHeight, 0)
-        .scrollContentBackground(.hidden)
     }
     
     private var sortedIndices: [Int] {
@@ -114,6 +124,7 @@ struct SetView: View {
         return VStack(alignment: .leading, spacing: 0) {
             questionSectionView(for: flashcard)
             
+            Text(String(flashcard.index.wrappedValue))
             // Divider
             Rectangle()
                 .fill(colors.boxBorderColor)

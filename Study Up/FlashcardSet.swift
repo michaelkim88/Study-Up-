@@ -45,6 +45,7 @@ class FlashcardSet {
         self.title = title
         self.creationDate = Date()
         self.flashcards = flashcards // Assign initial flashcards if provided
+        self.index_create = flashcards.count
     }
 
     // Adds a new flashcard to the end and saves context.
