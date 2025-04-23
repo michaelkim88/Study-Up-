@@ -136,6 +136,7 @@ struct HomeView: View {
                             DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                                     modelContext.insert(set)
+                                    try? modelContext.save()
                                 }
                             }
                         }
