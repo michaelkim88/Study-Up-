@@ -8,6 +8,7 @@ struct SetView: View {
     @Environment(\.colorScheme) var colorScheme
     @State private var textFieldUpdateTrigger = false
     @Environment(\.modelContext) private var modelContext
+    @State private var scrollToBottom = false
     
     // Use shared color scheme
     private var colors: AppColorScheme {
@@ -82,22 +83,64 @@ struct SetView: View {
     
     private var cardListView: some View {
         
-        List ($flashcardSet.flashcards, editActions: .move) { flashcard in
-            let allIndices = flashcardSet.flashcards.compactMap(\.index)
-            let minIndex   = allIndices.min()
-            let maxIndex   = allIndices.max()
+        ZStack {
             
-            if flashcard.index.wrappedValue == minIndex {
-                addNewCardButton(atTop: true)
-            }
-            flashcardView(flashcard: flashcard)
-            if flashcard.index.wrappedValue == maxIndex {
-                addNewCardButton(atTop: false)
+            ScrollViewReader { proxy in
+                if flashcardSet.flashcards.isEmpty {
+                    // Custom layout for empty state
+                    VStack(alignment: .center) {
+                        addNewCardButton(atTop: true)
+                            .padding(.vertical, 8)
+                            .padding(.top, 2)
+                            .padding(.horizontal, 20)
+                        Spacer()
+                    }
+                    .frame(maxHeight: .infinity, alignment: .top) // This forces alignment to the top
+                } else {
+                    List ($flashcardSet.flashcards, editActions: .move) { flashcard in
+                        let allIndices = flashcardSet.flashcards.compactMap(\.index)
+                        let minIndex   = allIndices.min()
+                        let maxIndex   = allIndices.max()
+                        
+                        if flashcard.index.wrappedValue == minIndex {
+                            addNewCardButton(atTop: true)
+                        }
+                        
+                        flashcardView(flashcard: flashcard)
+                            .padding(.vertical, 8)
+                            .padding(.horizontal, 16)
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                            .listRowInsets(EdgeInsets())
+                            .id(flashcard.index.wrappedValue)
+                        
+                        if flashcard.index.wrappedValue == maxIndex && flashcardSet.flashcards.count > 2 {
+                            addNewCardButton(atTop: false)
+                                .id("bottomID")
+                        }
+                    }
+                    .onChange(of: flashcardSet.flashcards, { oldValue, newValue in
+                        var counter = 1
+                        for flashcard in newValue {
+                            flashcard.index = counter
+                            counter += 1
+                        }
+                    })
+                    .onChange(of: scrollToBottom) { _, needsToScroll in
+                        if needsToScroll {
+                            withAnimation(.easeOut(duration: 0.7)) {
+                                proxy.scrollTo("bottomID", anchor: .bottom)
+                            }
+                            // Reset the flag after scrolling
+                            scrollToBottom = false
+                        }
+                    }
+                    .listStyle(.plain)
+                    .environment(\.defaultMinListRowHeight, 0)
+                    .scrollContentBackground(.hidden)
+                }
             }
         }
-        .listStyle(PlainListStyle())
-        .environment(\.defaultMinListRowHeight, 0)
-        .scrollContentBackground(.hidden)
     }
     
     private var sortedIndices: [Int] {
@@ -114,6 +157,7 @@ struct SetView: View {
         return VStack(alignment: .leading, spacing: 0) {
             questionSectionView(for: flashcard)
             
+            Text(String(flashcard.index.wrappedValue))
             // Divider
             Rectangle()
                 .fill(colors.boxBorderColor)
@@ -139,9 +183,6 @@ struct SetView: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(colors.boxBorderColor, lineWidth: 1)
         )
-        .listRowSeparator(.hidden)
-        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
-        .listRowBackground(Color.clear)
     }
     
     private func questionSectionView(for flashcard: Binding<Flashcard>) -> some View {
@@ -223,7 +264,7 @@ struct SetView: View {
             .allowsHitTesting(false)
     }
     
-    private func addNewCardButton(atTop: Bool = false, atBottom: Bool = false) -> some View {
+    private func addNewCardButton(atTop: Bool = false) -> some View {
         ZStack {
             RoundedRectangle(cornerRadius: 8)
                 .fill(Color(red: 0.2, green: 0.8, blue: 0.4))
@@ -240,7 +281,6 @@ struct SetView: View {
             }
         }
         .listRowSeparator(.hidden)
-        .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
         .listRowBackground(Color.clear)
     }
     
@@ -352,8 +392,13 @@ struct SetView: View {
             
             if atBeginning {
                 flashcardSet.insert(flashcard: newCard, modelContext: modelContext)
+                
             } else {
                 flashcardSet.append(flashcard: newCard, modelContext: modelContext)
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                    scrollToBottom = true
+                }
             }
         }
     }
@@ -423,11 +468,12 @@ extension UIApplication {
 
 #Preview {
     SetView(flashcardSet: FlashcardSet(title: "Science", flashcards: [
-        Flashcard(question: "What is H2O?", answer: "Water", index: 1),
-        Flashcard(question: "What is the closest planet to the Sun?", answer: "Mercury", index: 2),
-        Flashcard(question: "What is the hardest natural substance?", answer: "Diamond", index: 3),
-        Flashcard(question: "What is the speed of light?", answer: "299,792,458 meters per second", index: 4),
-        Flashcard(question: "What is the largest organ in the human body?", answer: "Skin", index: 5),
-        Flashcard(question: "What is the process of plants making food called?", answer: "Photosynthesis", index: 6)
+        Flashcard(question: "What is H2O?", answer: "Water", index: 1)
+//        ,
+//        Flashcard(question: "What is the closest planet to the Sun?", answer: "Mercury", index: 2),
+//        Flashcard(question: "What is the hardest natural substance?", answer: "Diamond", index: 3),
+//        Flashcard(question: "What is the speed of light?", answer: "299,792,458 meters per second", index: 4),
+//        Flashcard(question: "What is the largest organ in the human body?", answer: "Skin", index: 5),
+//        Flashcard(question: "What is the process of plants making food called?", answer: "Photosynthesis", index: 6)
     ]))
 }

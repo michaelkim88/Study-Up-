@@ -16,6 +16,7 @@ class Flashcard {
     // Ensure index is consistently managed
     @Attribute(.preserveValueOnDeletion) // Consider if you want index gaps or re-indexing on delete
     var index: Int
+    
 
     // Relationship back to the set
     var set: FlashcardSet?
@@ -45,6 +46,7 @@ class FlashcardSet {
         self.title = title
         self.creationDate = Date()
         self.flashcards = flashcards // Assign initial flashcards if provided
+        self.index_create = flashcards.count
     }
 
     // Adds a new flashcard to the end and saves context.
@@ -55,7 +57,7 @@ class FlashcardSet {
         flashcards.append(flashcard) // Add to the Swift array
 
         // Save the context if provided
-        save(context: modelContext)
+        save(context: modelContext) 
     }
 
     // Inserts a new flashcard at the beginning, re-indexes others, and saves context.
