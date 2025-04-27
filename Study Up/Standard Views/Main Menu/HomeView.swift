@@ -200,7 +200,9 @@ struct HomeView: View {
             .toolbar {
               ToolbarItem(placement: .navigationBarLeading) {
                 Button("Done") {
-                  withAnimation { selectionMode = false }
+                    withAnimation {
+                        selectionMode = false
+                    }
                 }
                 .disabled(!selectionMode)                  // non‑clickable when not in mode
                 .opacity(selectionMode ? 1 : 0)            // invisible when not in mode
@@ -213,53 +215,63 @@ struct HomeView: View {
 // Set Grid item that serves as a navigation link and
 // selection mode toggle. Used to display the flashcard sets.
 struct SelectableGridItem: View {
-    let flashcardSet: FlashcardSet
-    @Binding var selectionMode: Bool
-    @State private var isSelected: Bool = false
-    let colors: AppColorScheme
-    
-    var body: some View {
-        ZStack {
-            NavigationLink(value: flashcardSet) {
-                FlashcardSetGridItem(set: flashcardSet, colors: colors)
+  let flashcardSet: FlashcardSet
+  @Binding var selectionMode: Bool
+  
+  @State private var isSelected = false
+  @State private var clearedSelection = false
+  let colors: AppColorScheme
+  
+  var body: some View {
+    ZStack {
+      NavigationLink(value: flashcardSet) {
+        FlashcardSetGridItem(set: flashcardSet, colors: colors)
+      }
+      .disabled(selectionMode)
+      
+      .simultaneousGesture(
+        LongPressGesture(minimumDuration: 0.5)
+          .onEnded { _ in
+            guard !selectionMode else { return }
+            withAnimation {
+              selectionMode = true
+              isSelected = true
             }
-            
-            // No navigation while in selection mode
-            .disabled(selectionMode)
-            
-            .simultaneousGesture(
-                LongPressGesture(minimumDuration: 0.5)
-                    .onEnded { _ in
-                        if !selectionMode {
-                            withAnimation {
-                                selectionMode = true
-                                isSelected = true
-                            }
-                        }
-                    }
-            )
-            
-            // Invisible overlay to capture taps in selection mode
-            if selectionMode {
-                Color.clear
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        withAnimation {
-                            isSelected.toggle()
-                        }
-                    }
-                    .overlay(
-                        Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                            .foregroundColor(.blue)
-                            .padding(8)
-                            .clipShape(Circle())
-                            .offset(x: 70, y: -40)
-                    )
-            }
-        }
-        .contentShape(Rectangle())
+          }
+      )
+      
+      // tap toggles just this item
+      if selectionMode {
+        Color.clear
+          .contentShape(Rectangle())
+          .onTapGesture {
+            withAnimation { isSelected.toggle() }
+          }
+          .overlay(
+            Image(systemName: isSelected
+                      ? "checkmark.circle.fill"
+                      : "circle")
+              .foregroundColor(.blue)
+              .padding(8)
+              .offset(x: 70, y: -40)
+          )
+      }
     }
+    .contentShape(Rectangle())
+    .onChange(of: selectionMode) { oldValue, newValue in
+      if newValue && !oldValue {
+        // entering: only pre-held items stay deselected
+        if !isSelected { isSelected = false }
+        clearedSelection = true
+      } else if !newValue && oldValue {
+        // exiting: unselect everything
+        isSelected = false
+        clearedSelection = false
+      }
+    }
+  }
 }
+
 
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
