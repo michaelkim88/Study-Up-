@@ -16,6 +16,7 @@ struct HomeView: View {
     @State private var isSearchExpanded = false
     @State private var newSet: FlashcardSet? = nil
     @State private var selectionMode: Bool = false
+    @State private var selectedSets: Set<FlashcardSet.ID> = []
     @FocusState private var isSearchFocused: Bool
     
     @Environment(\.modelContext) private var modelContext
@@ -61,7 +62,17 @@ struct HomeView: View {
                             }
                             LazyVGrid(columns: columns, spacing: 20) {
                                 ForEach(filteredFlashcardSets) { set in
-                                    SelectableGridItem(flashcardSet: set, selectionMode: $selectionMode, colors: colors)
+                                    SelectableGridItem(
+                                        flashcardSet: set,
+                                        selectionMode: $selectionMode,
+                                        isSelected: Binding(
+                                            get: { selectedSets.contains(set.id) },
+                                            set: { newValue in
+                                                if newValue { selectedSets.insert(set.id) }
+                                                else        { selectedSets.remove(set.id) }
+                                            }
+                                        ),
+                                        colors: colors)
                                 }
                             }
                             .padding(.horizontal, 10)
@@ -74,29 +85,29 @@ struct HomeView: View {
                     .allowsHitTesting(!isSearchExpanded && !isExpanded)
                 }
                 
-//                // Top cutoff overlay
-//                VStack(spacing: 0) {
-//                    Rectangle()
-//                        .fill(colors.cutoffColor)
-//                        .frame(height: 60)
-//                        .overlay(alignment: .leading) {
-//                            if selectionMode {
-//                                Text("Done")
-//                                    .font(.headline)
-//                                    .foregroundColor(.blue)
-//                                    .padding(.leading, 16)
-//                                    .padding(.top, 16)
-//                                    .contentShape(Rectangle())    // make tap area full text bounds
-//                                    .onTapGesture {
-//                                        withAnimation { selectionMode = false }
-//                                    }
-//                            }
-//                        }
-//                        .allowsHitTesting(true)  // ensure taps go through
-//                    Spacer()
-//                }
-//                .ignoresSafeArea(edges: .top)
-
+                //                // Top cutoff overlay
+                //                VStack(spacing: 0) {
+                //                    Rectangle()
+                //                        .fill(colors.cutoffColor)
+                //                        .frame(height: 60)
+                //                        .overlay(alignment: .leading) {
+                //                            if selectionMode {
+                //                                Text("Done")
+                //                                    .font(.headline)
+                //                                    .foregroundColor(.blue)
+                //                                    .padding(.leading, 16)
+                //                                    .padding(.top, 16)
+                //                                    .contentShape(Rectangle())    // make tap area full text bounds
+                //                                    .onTapGesture {
+                //                                        withAnimation { selectionMode = false }
+                //                                    }
+                //                            }
+                //                        }
+                //                        .allowsHitTesting(true)  // ensure taps go through
+                //                    Spacer()
+                //                }
+                //                .ignoresSafeArea(edges: .top)
+                
                 
                 // Bottom cutoff overlay
                 VStack(alignment: .center, spacing: 0) {
@@ -198,16 +209,31 @@ struct HomeView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(.visible, for: .navigationBar)                 // make the bar’s background layer visible
             .toolbarBackground(colors.cutoffColor, for: .navigationBar)
+            
             .toolbar {
-              ToolbarItem(placement: .navigationBarLeading) {
-                Button("Done") {
-                    withAnimation {
-                        selectionMode = false
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Done") {
+                      withAnimation { selectionMode = false }
                     }
-                }
-                .disabled(!selectionMode)                  // non‑clickable when not in mode
-                .opacity(selectionMode ? 1 : 0)            // invisible when not in mode
-              }
+                    .disabled(!selectionMode)
+                    .opacity(selectionMode ? 1 : 0)
+                  }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Delete") {
+                      // delete logic…
+                      selectedSets.forEach { id in
+                        if let set = flashcardSets.first(where: { $0.id == id }) {
+                          modelContext.delete(set)
+                        }
+                      }
+                      try? modelContext.save()
+                      selectedSets.removeAll()
+                      selectionMode = false
+                    }
+                    .disabled(selectedSets.isEmpty)
+                    .opacity(selectionMode ? 1 : 0)
+                  }
             }
         }
     }
@@ -219,7 +245,7 @@ struct SelectableGridItem: View {
   let flashcardSet: FlashcardSet
   @Binding var selectionMode: Bool
   
-  @State private var isSelected = false
+    @Binding var isSelected: Bool
   @State private var clearedSelection = false
   let colors: AppColorScheme
   
