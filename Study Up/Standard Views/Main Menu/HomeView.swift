@@ -19,6 +19,8 @@ struct HomeView: View {
     @State private var selectedSets: Set<FlashcardSet.ID> = []
     @FocusState private var isSearchFocused: Bool
     
+    @State private var showDeleteConfirmation = false
+    
     @Environment(\.modelContext) private var modelContext
     
     // Use shared color scheme
@@ -53,11 +55,20 @@ struct HomeView: View {
                     GeometryReader { geometry in
                         ScrollView {
                             if (filteredFlashcardSets.isEmpty) {
-                                VStack {
-                                    Text("No Results Found")
-                                        .font(.title)
-                                        .foregroundColor(colors.textColor)
-                                        .padding()
+                                if (searchText.isEmpty) {
+                                    VStack {
+                                        Text("No Flashcard Sets")
+                                            .font(.title)
+                                            .foregroundColor(colors.textColor)
+                                            .padding()
+                                    }
+                                } else {
+                                    VStack {
+                                        Text("No Results Found")
+                                            .font(.title)
+                                            .foregroundColor(colors.textColor)
+                                            .padding()
+                                    }
                                 }
                             }
                             LazyVGrid(columns: columns, spacing: 20) {
@@ -221,7 +232,6 @@ struct HomeView: View {
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Delete") {
-                      // delete logic…
                       selectedSets.forEach { id in
                         if let set = flashcardSets.first(where: { $0.id == id }) {
                           modelContext.delete(set)
