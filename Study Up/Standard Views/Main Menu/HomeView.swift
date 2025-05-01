@@ -232,19 +232,30 @@ struct HomeView: View {
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Delete") {
-                      selectedSets.forEach { id in
-                        if let set = flashcardSets.first(where: { $0.id == id }) {
-                          modelContext.delete(set)
-                        }
-                      }
-                      try? modelContext.save()
-                      selectedSets.removeAll()
-                      selectionMode = false
+                        showDeleteConfirmation = true
                     }
                     .disabled(selectedSets.isEmpty)
                     .opacity(selectionMode ? 1 : 0)
                   }
             }
+        }
+        .alert("Delete Selected Sets?",
+               isPresented: $showDeleteConfirmation,
+               presenting: selectedSets.count
+        ) { count in
+            Button("Delete", role: .destructive) {
+                selectedSets.forEach { id in
+                    if let set = flashcardSets.first(where: { $0.id == id }) {
+                        modelContext.delete(set)
+                    }
+                }
+                try? modelContext.save()
+                selectedSets.removeAll()
+                selectionMode = false
+            }
+            Button("Cancel", role: .cancel()) {}
+        } message: { count in
+            Text("Are you sure you want to delete \(count) set\(count == 1 ? "" : "s")?")
         }
     }
 }
