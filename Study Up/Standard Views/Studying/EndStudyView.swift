@@ -12,8 +12,9 @@ struct EndStudyView: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        VStack(spacing: 30) {
-            // Back button at the top
+        VStack(spacing: 0) {
+            // Back button at the top\
+
             HStack {
                 Button(action: {
                     dismiss() // Dismiss the current view

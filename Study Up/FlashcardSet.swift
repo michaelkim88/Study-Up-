@@ -48,6 +48,14 @@ class FlashcardSet {
         self.flashcards = flashcards // Assign initial flashcards if provided
         self.index_create = flashcards.count
     }
+    
+    init(title: String, flashcards: [Flashcard] = [], indexes: Int) {
+        self.title = title
+        self.creationDate = Date()
+        self.flashcards = flashcards // Assign initial flashcards if provided
+        self.index_create = flashcards.count
+        self.index_create = indexes
+    }
 
     // Adds a new flashcard to the end and saves context.
     func append(flashcard: Flashcard, modelContext: ModelContext?) {
@@ -62,11 +70,6 @@ class FlashcardSet {
 
     // Inserts a new flashcard at the beginning, re-indexes others, and saves context.
     func insert(flashcard: Flashcard, modelContext: ModelContext?) {
-        // Increment the index of all existing flashcards
-        for card in flashcards {
-            card.index = (card.index) + 1
-        }
-
         // Set up the new flashcard
         flashcard.index = 0 // New card goes at the beginning
         flashcard.set = self // Establish the relationship

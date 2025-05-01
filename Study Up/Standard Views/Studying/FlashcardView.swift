@@ -132,7 +132,6 @@ struct FlashcardView: View {
                 EndStudyView(flashcardSet: flashcardSet)
             }
         }
-        .padding()
         Spacer()
     }
     

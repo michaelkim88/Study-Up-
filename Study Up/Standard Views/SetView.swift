@@ -34,16 +34,12 @@ struct SetView: View {
         }
     }
     
-    // MARK: - Main View Components
     
     private var mainContentView: some View {
         VStack(spacing: 0) {
             titleBarView
             
-            GeometryReader { _ in
-                cardListView
-            }
-            
+            cardListView
             // Bottom cutoff overlay
             bottomCutoffView
         }
@@ -82,10 +78,9 @@ struct SetView: View {
     }
     
     private var cardListView: some View {
-        
         ZStack {
-            
             ScrollViewReader { proxy in
+                
                 if flashcardSet.flashcards.isEmpty {
                     // Custom layout for empty state
                     VStack(alignment: .center) {
@@ -97,47 +92,47 @@ struct SetView: View {
                     }
                     .frame(maxHeight: .infinity, alignment: .top) // This forces alignment to the top
                 } else {
-                    List ($flashcardSet.flashcards, editActions: .move) { flashcard in
-                        let allIndices = flashcardSet.flashcards.compactMap(\.index)
-                        let minIndex   = allIndices.min()
-                        let maxIndex   = allIndices.max()
-                        
-                        if flashcard.index.wrappedValue == minIndex {
+                    List {
+                        if flashcardSet.flashcards.first != nil {
                             addNewCardButton(atTop: true)
                         }
                         
-                        flashcardView(flashcard: flashcard)
-                            .padding(.vertical, 8)
-                            .padding(.horizontal, 16)
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
-                            .listRowInsets(EdgeInsets())
-                            .id(flashcard.index.wrappedValue)
+                        ForEach($flashcardSet.flashcards) { $flashcard in
+                            // Display the actual flashcard
+                            flashcardView(flashcard: $flashcard)
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(Color.clear)
+                        }
                         
-                        if flashcard.index.wrappedValue == maxIndex && flashcardSet.flashcards.count > 2 {
+                        if flashcardSet.flashcards.count > 2 {
                             addNewCardButton(atTop: false)
-                                .id("bottomID")
+                                .id("bottomAnchor")
                         }
                     }
-                    .onChange(of: flashcardSet.flashcards, { oldValue, newValue in
+                    .scrollContentBackground(.hidden)
+                    .listStyle(PlainListStyle())
+                    .listStyle(PlainListStyle())
+                    .environment(\.defaultMinListRowHeight, 0)
+                    .onChange(of: flashcardSet.flashcards) { oldValue, newValue in
                         var counter = 1
-                        for flashcard in newValue {
-                            flashcard.index = counter
+                        for i in newValue.indices {
+                            // Check if the binding's index needs update
+                            if flashcardSet.flashcards[i].index != counter {
+                                flashcardSet.flashcards[i].index = counter
+                            }
                             counter += 1
                         }
-                    })
+                    }
                     .onChange(of: scrollToBottom) { _, needsToScroll in
+                        // Keep the scroll-to-bottom logic
                         if needsToScroll {
-                            withAnimation(.easeOut(duration: 0.7)) {
-                                proxy.scrollTo("bottomID", anchor: .bottom)
+                            withAnimation(.easeOut(duration: 0.7)) { // Shortened duration slightly
+                                proxy.scrollTo("bottomAnchor", anchor: .bottom)
                             }
-                            // Reset the flag after scrolling
+                            // Reset the flag after scheduling the scroll
                             scrollToBottom = false
                         }
                     }
-                    .listStyle(.plain)
-                    .environment(\.defaultMinListRowHeight, 0)
-                    .scrollContentBackground(.hidden)
                 }
             }
         }
@@ -166,15 +161,18 @@ struct SetView: View {
             
             answerSectionView(for: flashcard)
         }
-        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
-            Button(role: .destructive) {
-                withAnimation {
-                    flashcardSet.remove(flashcardToRemove: flashcard.wrappedValue, modelContext: modelContext)
-                }
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(role: nil) {
+                flashcardSet.remove(flashcardToRemove: flashcard.wrappedValue, modelContext: modelContext)
             } label: {
-                Label("Delete", systemImage: "trash")
+                Image(systemName: "trash")
+                    .font(.system(size: 16))
+                    .foregroundColor(.black)
+                    .padding(8)
+                    .background(Circle().fill(.blue))
+                    .contentShape(Circle())
             }
-            .tint(.red)
+            .tint(.red) // Make the default button background transparent
         }
         .background(colors.boxColor)
         .cornerRadius(12)
@@ -388,12 +386,14 @@ struct SetView: View {
         
     private func addNewCard(atBeginning: Bool) {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-            let newCard = Flashcard(question: "New Question", answer: "New Answer", index: 0)
+            
             
             if atBeginning {
+                let newCard = Flashcard(question: "New Question", answer: "New Answer", index: 0)
                 flashcardSet.insert(flashcard: newCard, modelContext: modelContext)
                 
             } else {
+                let newCard = Flashcard(question: "New Question", answer: "New Answer", index: flashcardSet.flashcards.count)
                 flashcardSet.append(flashcard: newCard, modelContext: modelContext)
                 
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
