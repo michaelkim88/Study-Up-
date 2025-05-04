@@ -9,6 +9,8 @@ struct SetView: View {
     @State private var textFieldUpdateTrigger = false
     @Environment(\.modelContext) private var modelContext
     @State private var scrollToBottom = false
+    @FocusState var showkeyboard :Bool
+
     
     // Use shared color scheme
     private var colors: AppColorScheme {
@@ -55,6 +57,13 @@ struct SetView: View {
                 .foregroundColor(colors.textColor)
                 .padding(.top, 8)
                 .multilineTextAlignment(.center)
+                .focused($showkeyboard)
+                .onAppear (){
+                    if ($flashcardSet.title.wrappedValue == "Untitled Set"){
+                        showkeyboard = true
+                    }
+                }
+
             
             HStack {
                 backButton
