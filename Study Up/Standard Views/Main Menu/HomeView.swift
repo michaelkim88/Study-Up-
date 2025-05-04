@@ -224,11 +224,11 @@ struct HomeView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Done") {
-                      withAnimation { selectionMode = false }
+                        withAnimation { selectionMode = false }
                     }
                     .disabled(!selectionMode)
                     .opacity(selectionMode ? 1 : 0)
-                  }
+                }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Delete") {
@@ -236,13 +236,12 @@ struct HomeView: View {
                     }
                     .disabled(selectedSets.isEmpty)
                     .opacity(selectionMode ? 1 : 0)
-                  }
+                }
             }
         }
-        .alert("Delete Selected Sets?",
-               isPresented: $showDeleteConfirmation,
-               presenting: selectedSets.count
-        ) { count in
+        .alert(Text("Delete \(selectedSets.count) set\(selectedSets.count == 1 ? "" : "s")?"),
+               isPresented: $showDeleteConfirmation
+        ) {
             Button("Delete", role: .destructive) {
                 selectedSets.forEach { id in
                     if let set = flashcardSets.first(where: { $0.id == id }) {
@@ -253,9 +252,7 @@ struct HomeView: View {
                 selectedSets.removeAll()
                 selectionMode = false
             }
-            Button("Cancel", role: .cancel()) {}
-        } message: { count in
-            Text("Are you sure you want to delete \(count) set\(count == 1 ? "" : "s")?")
+            Button("Cancel", role: .cancel) {}
         }
     }
 }
