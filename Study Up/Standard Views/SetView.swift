@@ -10,7 +10,12 @@ struct SetView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var scrollToBottom = false
     @FocusState var showkeyboard :Bool
-
+    @State private var isSwiped: Bool = false
+    
+    // Threshold after which the item stays open
+    private let swipeThreshold: CGFloat = 50
+    // Delete button width
+    private let deleteWidth: CGFloat = 80
     
     // Use shared color scheme
     private var colors: AppColorScheme {
@@ -158,38 +163,77 @@ struct SetView: View {
     
     private func flashcardView(flashcard: Binding<Flashcard>) -> some View {
         
-        return VStack(alignment: .leading, spacing: 0) {
-            questionSectionView(for: flashcard)
+        return ZStack {
             
-            Text(String(flashcard.index.wrappedValue))
-            // Divider
-            Rectangle()
-                .fill(colors.boxBorderColor)
-                .frame(height: 1)
-                .padding(.horizontal, 32)
-            
-            answerSectionView(for: flashcard)
-        }
-        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            Button(role: nil) {
-                flashcardSet.remove(flashcardToRemove: flashcard.wrappedValue, modelContext: modelContext)
-            } label: {
-                Image(systemName: "trash")
-                    .font(.system(size: 16))
-                    .foregroundColor(.black)
-                    .padding(8)
-                    .background(Circle().fill(.blue))
-                    .contentShape(Circle())
+            HStack {
+                Spacer()
+                Button(action: {
+                    self.isSwiped = false
+                    flashcardSet.remove(flashcardToRemove: flashcard.wrappedValue, modelContext: modelContext)
+                }) {
+                    Image(systemName: "trash")
+                        .foregroundColor(.white)
+                        .frame(width: 50, height: 50)
+                        .background(Color.red)
+                        .clipShape(Circle())
+                        .shadow(radius: 4)
+                }
             }
-            .tint(.red) // Make the default button background transparent
+            
+            VStack(alignment: .leading, spacing: 0) {
+                questionSectionView(for: flashcard)
+                
+                Text(String(flashcard.index.wrappedValue))
+                // Divider
+                Rectangle()
+                    .fill(colors.boxBorderColor)
+                    .frame(height: 1)
+                    .padding(.horizontal, 32)
+                
+                answerSectionView(for: flashcard)
+            }
+            .background(colors.boxColor)
+            .cornerRadius(12)
+            .shadow(radius: 3)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(colors.boxBorderColor, lineWidth: 1)
+            )
+            .offset(x: offset)
+            .gesture(
+                // Using DragGesture instead of a ScrollView for more control
+                DragGesture()
+                    .onChanged { gesture in
+                        // Only allow swiping to the left (negative values)
+                        let newOffset = min(0, gesture.translation.width)
+                        
+                        // Limit how far it can be dragged
+                        self.offset = max(newOffset, -deleteWidth)
+                    }
+                    .onEnded { gesture in
+                        withAnimation(.spring()) {
+                            // Check if past threshold
+                            if self.offset < -swipeThreshold {
+                                self.offset = -deleteWidth // Snap to delete button width
+                                self.isSwiped = true
+                            } else {
+                                self.offset = 0 // Snap back
+                                self.isSwiped = false
+                            }
+                        }
+                    }
+            )
+            // Close when tapped if already open
+            .onTapGesture {
+                if self.isSwiped {
+                    withAnimation(.spring()) {
+                        flashcard.offset = 0
+                        self.isSwiped = false
+                        print("closing")
+                    }
+                }
+            }
         }
-        .background(colors.boxColor)
-        .cornerRadius(12)
-        .shadow(radius: 3)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(colors.boxBorderColor, lineWidth: 1)
-        )
     }
     
     private func questionSectionView(for flashcard: Binding<Flashcard>) -> some View {

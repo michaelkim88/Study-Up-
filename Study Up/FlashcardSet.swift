@@ -16,6 +16,8 @@ class Flashcard {
     // Ensure index is consistently managed
     @Attribute(.preserveValueOnDeletion) // Consider if you want index gaps or re-indexing on delete
     var index: Int
+    var offset: CGFloat = 0
+    var isSwiped: Bool = false
     
 
     // Relationship back to the set
